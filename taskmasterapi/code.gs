@@ -531,7 +531,7 @@ function getAvatarMap() {
             } else {
               Logger.log(`Could not extract fileId from URL: ${driveUrl}`);
               // Use fallback for this person
-              map[name.trim().toLowerCase()] = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjNEY0NkU1Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TEI8L3RleHQ+Cjwvc3ZnPgo=';
+              map[name.trim().toLowerCase()] = 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg';
             }
           } else {
             Logger.log(`Missing name or URL for row ${index + 1}`);
@@ -541,7 +541,7 @@ function getAvatarMap() {
         
         // Add fallback for unassigned
         if (!avatarMap['unassigned']) {
-          avatarMap['unassigned'] = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjNEY0NkU1Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TEI8L3RleHQ+Cjwvc3ZnPgo='; // Default LuvBuds logo
+          avatarMap['unassigned'] = 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'; // Default LuvBuds logo
         }
         
         Logger.log("Final avatar map keys: " + Object.keys(avatarMap).join(', '));
@@ -556,7 +556,7 @@ function getAvatarMap() {
         Logger.log("ERROR in getAvatarMap: " + e.stack);
         // Return a minimal map with fallback
         return {
-          'unassigned': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjNEY0NkU1Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TEI8L3RleHQ+Cjwvc3ZnPgo='
+          'unassigned': 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'
         };
     }
 }
@@ -761,7 +761,7 @@ function getTasks() {
           Logger.log(`No team member found for "${name}", using unassigned`);
           // Use unassigned member
           member = team.find(m => m.fullName.toLowerCase() === 'unassigned') || 
-                   { fullName: name, avatarUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjNEY0NkU1Ii8+Cjx0ZXh0IHg9Ijc1IiB5PSI4MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TEI8L3RleHQ+Cjwvc3ZnPgo=', email: '', phone: '' };
+                   { fullName: name, avatarUrl: 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg', email: '', phone: '' };
         } else {
           // Use the processed avatar URL from avatarMap instead of raw URL
           const processedAvatarUrl = avatarMap[member.fullName.toLowerCase()] || member.avatarUrl;
