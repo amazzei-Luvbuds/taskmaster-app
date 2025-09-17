@@ -5,7 +5,7 @@
 // ===================================================================================
 
 // --- PART 1: GLOBAL CONFIGURATION ---
-const MASTER_SHEET_ID = "161omaX8sXMPPvL9iqHi5c6EUUbn5ywQRhOPrIZ_-MVc"; // Main Task Sheet
+const MASTER_SHEET_ID = "11QlomHtMqe2tbNdMzKNpupPOGO77CNkhQgkG72Mw0Q4"; // New Test Task Sheet
 const AVATAR_SHEET_ID = "1iPTZ72wbx-CYu2tTcKe0QQe7HGbX_wUb9nfUFY2xp00"; // Your Avatar Profiles Sheet ID
 const MISTRAL_API_KEY = PropertiesService.getScriptProperties().getProperty('MISTRAL_API_KEY'); 
 const MISTRAL_API_ENDPOINT = 'https://api.mistral.ai/v1/chat/completions';
@@ -1069,7 +1069,7 @@ function sanitizeOwners_(input) {
 function buildTaskIdIndexMap_(sheet) {
   var lastCol = sheet.getLastColumn();
   var headers = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0] : [];
-  var taskIdCol = findColumnIndex_(headers, ['taskID','Task_ID','Task ID','ID','Id','id','taskId']);
+  var taskIdCol = findColumnIndex_(headers, ['taskID','Task_ID','Task ID','ID','Id','id','taskId','Task_Id','TaskID','TASK_ID','Task Id']);
   if (!taskIdCol) taskIdCol = 1; // fallback to column A if unknown
   var lastRow = sheet.getLastRow();
   var ids = lastRow > 1 ? sheet.getRange(2, taskIdCol, lastRow - 1, 1).getValues() : [];
@@ -1085,22 +1085,71 @@ function updateTaskStatus(taskId, newStatus) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(30000);
-    const sheet = SpreadsheetApp.openById(MASTER_SHEET_ID).getSheetByName('Tasks');
+    Logger.log(`=== UPDATE TASK STATUS DEBUG ===`);
+    Logger.log(`Looking for task ID: "${taskId}"`);
+    Logger.log(`New status: "${newStatus}"`);
+
+    // Try different possible sheet names
+    let sheet;
+    const possibleSheetNames = ['Tasks', 'Task List', 'TaskList', 'Main', 'Sheet1', 'Data'];
+    for (const sheetName of possibleSheetNames) {
+      try {
+        sheet = SpreadsheetApp.openById(MASTER_SHEET_ID).getSheetByName(sheetName);
+        if (sheet) {
+          Logger.log(`Found sheet: ${sheetName}`);
+          break;
+        }
+      } catch (e) {
+        // Sheet doesn't exist, try next one
+      }
+    }
+
+    if (!sheet) {
+      Logger.log("No valid sheet found. Tried: " + possibleSheetNames.join(', '));
+      return { status: "Error", message: "No valid sheet found. Tried: " + possibleSheetNames.join(', ') };
+    }
+
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const statusColIndex = findColumnIndex_(headers, ['Status','status','Task_Status','taskStatus']);
-    if (!statusColIndex) throw new Error("'Status' column not found.");
+    Logger.log(`Headers found: ${headers.join(', ')}`);
+
+    const statusColIndex = findColumnIndex_(headers, ['Status','status','Task_Status','taskStatus','Task Status','TASK_STATUS','Project_Status','ProjectStatus']);
+    Logger.log(`Status column index: ${statusColIndex}`);
+
+    if (!statusColIndex) {
+      Logger.log("Status column not found. Available headers: " + headers.join(', '));
+      return { status: "Error", message: "Status column not found. Available headers: " + headers.join(', ') };
+    }
 
     const idx = buildTaskIdIndexMap_(sheet);
+    Logger.log(`Total tasks found: ${Object.keys(idx).length}`);
+    Logger.log(`First 5 task IDs: ${Object.keys(idx).slice(0, 5).join(', ')}`);
+
     const rowIndex = idx[String(taskId)] || 0;
+    Logger.log(`Looking for "${taskId}", found at row: ${rowIndex}`);
+
     if (rowIndex > 0) {
+      Logger.log(`Updating row ${rowIndex}, column ${statusColIndex} with "${newStatus}"`);
+
+      // Get current value first
+      const currentValue = sheet.getRange(rowIndex, statusColIndex).getValue();
+      Logger.log(`Current value in cell: "${currentValue}"`);
+
+      // Perform the update
       withRetry_(function(){ sheet.getRange(rowIndex, statusColIndex).setValue(newStatus); });
       SpreadsheetApp.flush();
+
+      // Verify the update
+      const newValue = sheet.getRange(rowIndex, statusColIndex).getValue();
+      Logger.log(`New value in cell: "${newValue}"`);
+      Logger.log(`Update completed successfully`);
       return { status: "Success" };
     }
-    return { status: "Error", message: "Task ID not found." };
+
+    Logger.log(`Task ID "${taskId}" not found in sheet`);
+    return { status: "Error", message: `Task ID "${taskId}" not found in sheet` };
   } catch (e) {
     Logger.log(`ERROR in updateTaskStatus: ${e.stack}`);
-    return { status: "Error", message: e.message };
+    return { status: "Error", message: `Error in updateTaskStatus: ${e.message}` };
   } finally {
     try { lock.releaseLock(); } catch (_) {}
   }
@@ -3357,6 +3406,14 @@ function doPost(e) {
     // Parse request body (JSON or form data)
     let requestBody = {};
     try {
+      Logger.log(`=== POST DATA DEBUG ===`);
+      Logger.log(`e.postData exists: ${!!e.postData}`);
+      if (e.postData) {
+        Logger.log(`e.postData.type: ${e.postData.type}`);
+        Logger.log(`e.postData.contents: ${e.postData.contents}`);
+      }
+      Logger.log(`e.parameter: ${JSON.stringify(e.parameter)}`);
+
       if (e.postData && e.postData.contents) {
         // Check if it's form data or JSON
         if (e.postData.type === 'application/x-www-form-urlencoded') {
@@ -3367,13 +3424,32 @@ function doPost(e) {
             const decodedData = decodeURIComponent(dataParam[1]);
             requestBody = JSON.parse(decodedData);
           }
+        } else if (e.postData.type && e.postData.type.includes('multipart/form-data')) {
+          // Handle multipart form data (FormData from browser)
+          Logger.log(`Handling multipart form data...`);
+          const boundary = e.postData.type.match(/boundary=([^;]+)/);
+          if (boundary) {
+            const parts = e.postData.contents.split('--' + boundary[1]);
+            for (const part of parts) {
+              if (part.includes('name="data"')) {
+                const dataStart = part.indexOf('\r\n\r\n') + 4;
+                const dataEnd = part.lastIndexOf('\r\n');
+                const jsonData = part.substring(dataStart, dataEnd);
+                requestBody = JSON.parse(jsonData);
+                break;
+              }
+            }
+          }
         } else {
           // Handle JSON data
           requestBody = JSON.parse(e.postData.contents);
         }
       }
+
+      Logger.log(`Parsed requestBody: ${JSON.stringify(requestBody)}`);
     } catch (parseError) {
       Logger.log(`Parse error: ${parseError.message}`);
+      Logger.log(`Parse error stack: ${parseError.stack}`);
       return createErrorResponse('Invalid request body', 400);
     }
 
@@ -3658,17 +3734,75 @@ function handleUpdateTaskStatus(requestBody, response) {
     }
 
     const result = updateTaskStatus(taskId, newStatus);
+
     if (result.status === "Error") {
       return createErrorResponse(result.message, 500);
     }
 
-    const updatedTask = getTaskById(taskId);
+    // Return a minimal response instead of fetching the full task
     return createSuccessResponse({
-      task: updatedTask,
+      task: {
+        taskID: taskId,
+        status: decodeURIComponent(newStatus.replace(/\+/g, ' ')), // Decode URL encoding: "Requires+Approval" -> "Requires Approval"
+      },
       message: 'Task status updated successfully'
     });
   } catch (error) {
     return createErrorResponse(`Failed to update task status: ${error.message}`, 500);
+  }
+}
+
+// Test function to debug sheet access
+function debugSheetAccess() {
+  try {
+    Logger.log("=== MANUAL DEBUG TEST ===");
+
+    // Try to find the sheet
+    let sheet;
+    const possibleSheetNames = ['Tasks', 'Task List', 'TaskList', 'Main', 'Sheet1', 'Data'];
+    for (const sheetName of possibleSheetNames) {
+      try {
+        sheet = SpreadsheetApp.openById(MASTER_SHEET_ID).getSheetByName(sheetName);
+        if (sheet) {
+          Logger.log(`✅ Found sheet: ${sheetName}`);
+          break;
+        }
+      } catch (e) {
+        Logger.log(`❌ Sheet '${sheetName}' not found`);
+      }
+    }
+
+    if (!sheet) {
+      Logger.log("❌ No valid sheet found!");
+      return "No sheet found";
+    }
+
+    // Get headers
+    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    Logger.log(`📋 Headers: ${headers.join(', ')}`);
+
+    // Check for task ID column
+    const taskIdCol = findColumnIndex_(headers, ['taskID','Task_ID','Task ID','ID','Id','id','taskId','Task_Id','TaskID','TASK_ID','Task Id']);
+    Logger.log(`🔍 Task ID column index: ${taskIdCol}`);
+
+    // Check for status column
+    const statusCol = findColumnIndex_(headers, ['Status','status','Task_Status','taskStatus','Task Status','TASK_STATUS','Project_Status','ProjectStatus']);
+    Logger.log(`📊 Status column index: ${statusCol}`);
+
+    // Get task index map
+    const idx = buildTaskIdIndexMap_(sheet);
+    Logger.log(`📈 Total tasks in map: ${Object.keys(idx).length}`);
+    Logger.log(`🔢 First 10 task IDs: ${Object.keys(idx).slice(0, 10).join(', ')}`);
+
+    // Test specific task
+    const testTaskId = "NT-130064-R89";
+    const rowIndex = idx[String(testTaskId)] || 0;
+    Logger.log(`🎯 Looking for "${testTaskId}", found at row: ${rowIndex}`);
+
+    return `Sheet: ${sheet.getName()}, Headers: ${headers.length}, Tasks: ${Object.keys(idx).length}`;
+  } catch (error) {
+    Logger.log(`❌ Error: ${error.message}`);
+    return `Error: ${error.message}`;
   }
 }
 
