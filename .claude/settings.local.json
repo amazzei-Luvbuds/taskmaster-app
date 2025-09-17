@@ -43,7 +43,12 @@
       "WebFetch(domain:docs.google.com)",
       "Bash(node:*)",
       "Bash(timeout 10s npm run dev)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(open http://127.0.0.1:5173/bmad-test-step2)",
+      "Bash(open http://127.0.0.1:5173/bmad-test-full)",
+      "Bash(open http://127.0.0.1:5173/)",
+      "Bash(open http://127.0.0.1:5173/bmad-test)",
+      "Bash(open http://127.0.0.1:5173/bmad-working)"
     ],
     "deny": [],
     "ask": []

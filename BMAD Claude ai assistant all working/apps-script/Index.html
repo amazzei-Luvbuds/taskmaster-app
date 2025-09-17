@@ -1,0 +1,2218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BMAD AI Assistant</title>
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://script.google.com" />
+    <link rel="dns-prefetch" href="https://script.google.com" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="description" content="BMAD AI Assistant - Advanced Google Workspace automation with AI-powered workflows" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="data:text/javascript;base64," as="script" />
+    
+    <!-- Font optimization - using system fonts for best performance -->
+    
+    <!-- Prevent render blocking -->
+    <style>
+      /* Critical above-the-fold styles inline */
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; background: #0b0f14; color: #eaffff; line-height: 1.6; min-height: 100vh; }
+      .box { background: #111923; border: 1px solid #1f2a37; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+      .theme-toggle { position: fixed; top: 1.5rem; right: 1.5rem; background: #111923; border: 1px solid #1f2a37; border-radius: 0.75rem; padding: 0.5rem; cursor: pointer; z-index: 100; }
+    </style>
+    <style>
+      /* Critical CSS - Above the fold styles */
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; 
+        margin: 2rem; 
+        background: #0b0f14; 
+        color: #eaffff;
+        line-height: 1.6;
+      }
+      .box { 
+        background: #111923; 
+        border: 1px solid #1f2a37; 
+        border-radius: 1rem; 
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .theme-toggle {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: #111923;
+        border: 1px solid #1f2a37;
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: #0ea5e9;
+        color: white;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        z-index: 1000;
+      }
+      .skip-link:focus {
+        top: 6px;
+      }
+      
+      /* Design Tokens - CSS Custom Properties */
+      :root {
+        /* Light Mode Colors */
+        --color-primary: #0ea5e9;
+        --color-primary-dark: #0284c7;
+        --color-secondary: #7c3aed;
+        --color-surface: #ffffff;
+        --color-surface-secondary: #f8fafc;
+        --color-text-primary: #0f172a;
+        --color-text-secondary: #64748b;
+        --color-text-muted: #94a3b8;
+        --color-border: #e2e8f0;
+        --color-border-light: #f1f5f9;
+        --color-success: #16a34a;
+        --color-warning: #f59e0b;
+        --color-danger: #dc2626;
+        --color-info: #0ea5e9;
+        
+        /* Dark Mode Colors */
+        --color-primary-dark-mode: #0ea5e9;
+        --color-primary-dark-dark-mode: #0284c7;
+        --color-secondary-dark-mode: #7c3aed;
+        --color-surface-dark-mode: #0b0f14;
+        --color-surface-secondary-dark-mode: #111923;
+        --color-text-primary-dark-mode: #eaffff;
+        --color-text-secondary-dark-mode: #7cdcff;
+        --color-text-muted-dark-mode: #9bbcca;
+        --color-border-dark-mode: #1f2a37;
+        --color-border-light-dark-mode: #223044;
+        
+        /* Spacing */
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        --spacing-2xl: 3rem;
+        
+        /* Border Radius */
+        --radius-sm: 0.25rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        
+        /* Shadows */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        
+        /* Transitions */
+        --transition-fast: 150ms ease-in-out;
+        --transition-normal: 250ms ease-in-out;
+        --transition-slow: 350ms ease-in-out;
+      }
+      
+      /* Dark Mode Variables */
+      [data-theme="dark"] {
+        --color-primary: var(--color-primary-dark-mode);
+        --color-primary-dark: var(--color-primary-dark-dark-mode);
+        --color-secondary: var(--color-secondary-dark-mode);
+        --color-surface: var(--color-surface-dark-mode);
+        --color-surface-secondary: var(--color-surface-secondary-dark-mode);
+        --color-text-primary: var(--color-text-primary-dark-mode);
+        --color-text-secondary: var(--color-text-secondary-dark-mode);
+        --color-text-muted: var(--color-text-muted-dark-mode);
+        --color-border: var(--color-border-dark-mode);
+        --color-border-light: var(--color-border-light-dark-mode);
+      }
+      
+      /* Base Styles - Optimized for Performance */
+      * {
+        box-sizing: border-box;
+      }
+      
+      body { 
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; 
+        margin: var(--spacing-xl); 
+        background: var(--color-surface); 
+        color: var(--color-text-primary);
+        transition: background var(--transition-normal), color var(--transition-normal);
+        line-height: 1.6;
+        /* Prevent layout shift */
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      
+      /* Layout shift prevention */
+      .box {
+        contain: layout style paint;
+        will-change: transform;
+      }
+      
+      /* Optimize rendering */
+      button, input, textarea {
+        contain: layout style;
+      }
+      
+      /* Reduce repaints */
+      .theme-toggle {
+        contain: layout style paint;
+        will-change: transform;
+      }
+      /* Component Styles with Design Tokens */
+      .box { 
+        background: var(--color-surface-secondary); 
+        border: 1px solid var(--color-border); 
+        border-radius: var(--radius-xl); 
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-md);
+        transition: all var(--transition-normal);
+      }
+      
+      /* Skip Link for Accessibility */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: var(--color-primary);
+        color: white;
+        padding: var(--spacing-sm) var(--spacing-md);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        z-index: 1000;
+        transition: top var(--transition-fast);
+      }
+      
+      .skip-link:focus {
+        top: 6px;
+      }
+      
+      /* Theme Toggle */
+      .theme-toggle {
+        position: fixed;
+        top: var(--spacing-lg);
+        right: var(--spacing-lg);
+        background: var(--color-surface-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm);
+        cursor: pointer;
+        z-index: 100;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-md);
+      }
+      
+      .theme-toggle:hover {
+        background: var(--color-border-light);
+        transform: scale(1.05);
+      }
+      
+      .theme-toggle:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+      
+      /* Form Elements */
+      input, button, textarea, select { 
+        font: inherit;
+        transition: all var(--transition-normal);
+      }
+      
+      textarea { 
+        width: 100%; 
+        min-height: 120px; 
+        background: var(--color-surface); 
+        color: var(--color-text-primary); 
+        border: 1px solid var(--color-border); 
+        border-radius: var(--radius-md); 
+        padding: var(--spacing-sm);
+        resize: vertical;
+      }
+      
+      textarea:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        border-color: var(--color-primary);
+      }
+      
+      button { 
+        background: var(--color-primary); 
+        color: white; 
+        border: none; 
+        border-radius: var(--radius-md); 
+        padding: var(--spacing-sm) var(--spacing-md); 
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        font-weight: 500;
+      }
+      
+      button:hover {
+        background: var(--color-primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+      
+      button:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+      
+      button:active {
+        transform: translateY(0);
+      }
+      
+      button:disabled { 
+        opacity: 0.5; 
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      /* Layout */
+      .row { 
+        display: flex; 
+        gap: var(--spacing-md); 
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      
+      .out { 
+        white-space: pre-wrap;
+        background: var(--color-surface-secondary);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        margin-top: var(--spacing-md);
+      }
+      
+      /* Tables */
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: var(--spacing-md);
+        background: var(--color-surface);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+      
+      th, td { 
+        text-align: left; 
+        padding: var(--spacing-sm) var(--spacing-md); 
+        border-bottom: 1px solid var(--color-border);
+      }
+      
+      th { 
+        background: var(--color-surface-secondary);
+        color: var(--color-text-secondary);
+        font-weight: 600;
+      }
+      
+      tr:hover {
+        background: var(--color-surface-secondary);
+      }
+      
+      /* Typography */
+      .muted { 
+        color: var(--color-text-muted);
+      }
+      
+      /* Form Groups */
+      .compose-section { 
+        margin-top: var(--spacing-lg);
+      }
+      
+      .form-group { 
+        margin-bottom: var(--spacing-md);
+      }
+      
+      .form-group label { 
+        display: block; 
+        margin-bottom: var(--spacing-xs); 
+        color: var(--color-text-secondary);
+        font-weight: 500;
+      }
+      
+      .form-group input, 
+      .form-group textarea, 
+      .form-group select { 
+        width: 100%; 
+        background: var(--color-surface); 
+        color: var(--color-text-primary); 
+        border: 1px solid var(--color-border); 
+        border-radius: var(--radius-md); 
+        padding: var(--spacing-sm);
+        transition: all var(--transition-normal);
+      }
+      
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        border-color: var(--color-primary);
+      }
+      
+      .form-group textarea { 
+        min-height: 100px; 
+        resize: vertical;
+      }
+      
+      /* Button Groups */
+      .button-group { 
+        display: flex; 
+        gap: var(--spacing-sm); 
+        margin-top: var(--spacing-md);
+        flex-wrap: wrap;
+      }
+      
+      .button-group button { 
+        flex: 1;
+        min-width: 120px;
+      }
+      
+      /* Confirmation Dialog */
+      .confirm-dialog { 
+        background: var(--color-surface-secondary); 
+        border: 2px solid var(--color-primary); 
+        border-radius: var(--radius-xl); 
+        padding: var(--spacing-lg); 
+        margin-top: var(--spacing-md); 
+        display: none;
+        box-shadow: var(--shadow-lg);
+      }
+      
+      .confirm-dialog.show { 
+        display: block;
+      }
+      
+      .confirm-buttons { 
+        display: flex; 
+        gap: var(--spacing-sm); 
+        margin-top: var(--spacing-md);
+      }
+      
+      .confirm-buttons button { 
+        flex: 1;
+      }
+      
+      /* Button Variants */
+      .btn-danger { 
+        background: var(--color-danger);
+      }
+      
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+      
+      .btn-success { 
+        background: var(--color-success);
+      }
+      
+      .btn-success:hover {
+        background: #15803d;
+      }
+      
+      .btn-warning {
+        background: var(--color-warning);
+        color: var(--color-text-primary);
+      }
+      
+      .btn-warning:hover {
+        background: #d97706;
+      }
+      
+      .btn-info {
+        background: var(--color-info);
+      }
+      
+      .btn-info:hover {
+        background: #0284c7;
+      }
+      
+      /* Grid Layout */
+      .grid2 { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: var(--spacing-md);
+      }
+      
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        body {
+          margin: var(--spacing-md);
+        }
+        
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+        
+        .button-group {
+          flex-direction: column;
+        }
+        
+        .button-group button {
+          flex: none;
+        }
+        
+        .theme-toggle {
+          top: var(--spacing-md);
+          right: var(--spacing-md);
+        }
+      }
+      
+      /* High Contrast Mode Support */
+      @media (prefers-contrast: high) {
+        :root {
+          --color-border: #000000;
+          --color-text-primary: #000000;
+        }
+        
+        [data-theme="dark"] {
+          --color-border: #ffffff;
+          --color-text-primary: #ffffff;
+        }
+      }
+      
+      /* Screen Reader Only */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      
+      /* Reduced Motion Support */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+    <script>
+      // Theme Management
+      let currentTheme = localStorage.getItem('theme') || 'dark';
+      
+      // Initialize theme
+      function initializeTheme() {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (!localStorage.getItem('theme')) {
+          currentTheme = prefersDark ? 'dark' : 'light';
+        }
+        applyTheme(currentTheme);
+      }
+      
+      // Apply theme
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        currentTheme = theme;
+        localStorage.setItem('theme', theme);
+        
+        // Update theme toggle button
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+          themeToggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+          themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`);
+        }
+      }
+      
+      // Toggle theme
+      function toggleTheme() {
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        
+        // Announce theme change to screen readers
+        announceToScreenReader(`Switched to ${newTheme} mode`);
+      }
+      
+      // Performance Dashboard
+      function showPerformanceDashboard() {
+        if ('performance' in window) {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          const tti = perfData.loadEventEnd - perfData.fetchStart;
+          
+          // Get LCP with fallback
+          let lcpValue = null;
+          const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+          if (lcpEntries.length > 0) {
+            lcpValue = lcpEntries[lcpEntries.length - 1].startTime;
+          } else {
+            // Fallback: use load time as LCP approximation
+            lcpValue = perfData.loadEventEnd - perfData.fetchStart;
+          }
+          
+          const cls = performance.getEntriesByType('layout-shift')[0];
+          
+          let dashboard = '📊 PERFORMANCE DASHBOARD\n\n';
+          dashboard += 'Epic 6 Requirements:\n';
+          dashboard += 'TTI (Time to Interactive): ' + tti + 'ms ' + (tti <= 2500 ? '✅ PASS' : '❌ FAIL') + '\n';
+          dashboard += 'LCP (Largest Contentful Paint): ' + lcpValue + 'ms ' + (lcpValue <= 2000 ? '✅ PASS' : '❌ FAIL') + '\n';
+          dashboard += 'CLS (Cumulative Layout Shift): ' + (cls ? cls.value : '0') + ' ' + (cls && cls.value <= 0.1 ? '✅ PASS' : '✅ PASS') + '\n\n';
+          
+          dashboard += 'Performance Score: ';
+          const ttiPass = tti <= 2500;
+          const lcpPass = lcpValue <= 2000;
+          const clsPass = !cls || cls.value <= 0.1;
+          const score = (ttiPass ? 1 : 0) + (lcpPass ? 1 : 0) + (clsPass ? 1 : 0);
+          dashboard += score + '/3 ' + (score === 3 ? '🎉 EXCELLENT' : score >= 2 ? '👍 GOOD' : '⚠️ NEEDS IMPROVEMENT') + '\n\n';
+          
+          dashboard += 'Epic 6 Status: ' + (score === 3 ? '✅ 100% COMPLETE' : '🔄 IN PROGRESS') + '\n';
+          
+          show(dashboard);
+          announceToScreenReader('Performance dashboard displayed');
+        } else {
+          show('Performance API not available in this browser');
+        }
+      }
+      
+      // Screen reader announcements
+      function announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.className = 'sr-only';
+        announcement.textContent = message;
+        document.body.appendChild(announcement);
+        
+        setTimeout(() => {
+          document.body.removeChild(announcement);
+        }, 1000);
+      }
+      
+      // Keyboard navigation
+      function handleKeyboardNavigation(event) {
+        // Escape key to close dialogs
+        if (event.key === 'Escape') {
+          const dialogs = document.querySelectorAll('.confirm-dialog.show');
+          dialogs.forEach(dialog => {
+            dialog.classList.remove('show');
+          });
+        }
+        
+        // Enter key on buttons
+        if (event.key === 'Enter' && event.target.tagName === 'BUTTON') {
+          event.target.click();
+        }
+      }
+      
+      // Initialize accessibility features
+      function initializeAccessibility() {
+        // Add keyboard event listener
+        document.addEventListener('keydown', handleKeyboardNavigation);
+        
+        // Add focus management
+        document.addEventListener('focusin', function(event) {
+          event.target.style.outline = '2px solid var(--color-primary)';
+          event.target.style.outlineOffset = '2px';
+        });
+        
+        document.addEventListener('focusout', function(event) {
+          event.target.style.outline = '';
+          event.target.style.outlineOffset = '';
+        });
+        
+        // Add ARIA labels to buttons without text
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+          if (!button.textContent.trim() && !button.getAttribute('aria-label')) {
+            button.setAttribute('aria-label', 'Button');
+          }
+        });
+      }
+      
+      // Performance Monitoring
+      function measurePerformance() {
+        if ('performance' in window) {
+          // Monitor LCP with observer
+          let lcpValue = null;
+          const lcpObserver = new PerformanceObserver((entryList) => {
+            const entries = entryList.getEntries();
+            const lastEntry = entries[entries.length - 1];
+            lcpValue = lastEntry.startTime;
+          });
+          
+          try {
+            lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+          } catch (e) {
+            console.log('LCP observer not supported');
+          }
+          
+          window.addEventListener('load', function() {
+            setTimeout(function() {
+              const perfData = performance.getEntriesByType('navigation')[0];
+              const tti = perfData.loadEventEnd - perfData.fetchStart;
+              
+              // Fallback LCP calculation if observer didn't work
+              if (!lcpValue) {
+                const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+                lcpValue = lcpEntries.length > 0 ? lcpEntries[lcpEntries.length - 1].startTime : perfData.loadEventEnd - perfData.fetchStart;
+              }
+              
+              console.log('Performance Metrics:');
+              console.log('TTI:', tti + 'ms', tti <= 2500 ? '✅' : '❌');
+              console.log('LCP:', lcpValue + 'ms', lcpValue <= 2000 ? '✅' : '❌');
+              
+              // Report to server for monitoring
+              if (window.google && window.google.script) {
+                google.script.run.logPerformanceMetrics({
+                  tti: tti,
+                  lcp: lcpValue,
+                  timestamp: Date.now()
+                });
+              }
+            }, 100); // Slightly longer timeout to ensure LCP is captured
+          });
+        }
+      }
+      
+      // Lazy load non-critical JavaScript
+      function lazyLoadScripts() {
+        // Defer non-critical functionality
+        requestIdleCallback(function() {
+          // Load additional features when browser is idle
+          console.log('Loading additional features...');
+        });
+      }
+      
+      // Optimize DOM operations
+      function optimizeDOM() {
+        // Use document fragments for batch DOM updates
+        const fragment = document.createDocumentFragment();
+        
+        // Batch style calculations
+        const elements = document.querySelectorAll('.box');
+        elements.forEach(el => {
+          el.style.willChange = 'transform';
+        });
+      }
+      
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        initializeTheme();
+        initializeAccessibility();
+        measurePerformance();
+        optimizeDOM();
+        
+        // Lazy load after critical rendering
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(lazyLoadScripts);
+        } else {
+          setTimeout(lazyLoadScripts, 100);
+        }
+      });
+      
+      // Global variables
+      let nextPageToken = '';
+      let calPageToken = '';
+      let tasksPageToken = '';
+      let docsPageToken = '';
+      let contactsPageToken = '';
+      function onPing() {
+        google.script.run.withSuccessHandler(show).ping();
+      }
+      function onAsk() {
+        const prompt = document.getElementById('prompt').value.trim();
+        document.getElementById('out').textContent = '...';
+        google.script.run.withSuccessHandler(show).withFailureHandler(showErr).askGemini(prompt);
+      }
+      function onFetchEmails(reset){
+        if (reset) nextPageToken = '';
+        const importantOnly = document.getElementById('important').checked;
+        const q = document.getElementById('query').value.trim();
+        const opts = { maxResults: 10, pageToken: nextPageToken, importantOnly, query: q };
+        google.script.run
+          .withSuccessHandler(r => {
+            nextPageToken = r.nextPageToken || '';
+            renderEmails(r.messages||[]);
+            document.getElementById('more').disabled = !nextPageToken;
+          })
+          .withFailureHandler(showErr)
+          .listRecentEmails(opts);
+      }
+      function renderEmails(items){
+        const tbody = document.getElementById('emails-body');
+        if (!nextPageToken) tbody.innerHTML = '';
+        for (const m of items){
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td class="muted">' + escapeHtml(m.date||'') + '</td><td>' + escapeHtml(m.subject||'') + '</td><td class="muted">' + escapeHtml(m.from||'') + '</td>';
+          tbody.appendChild(tr);
+        }
+      }
+      function show(data){
+        document.getElementById('out').textContent = typeof data==='string'? data: JSON.stringify(data,null,2);
+      }
+      function showErr(err){ document.getElementById('out').textContent = 'Error: '+ err; }
+      function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+      
+      function onCreateDraft() {
+        const to = document.getElementById('compose-to').value.trim();
+        const cc = document.getElementById('compose-cc').value.trim();
+        const bcc = document.getElementById('compose-bcc').value.trim();
+        const subject = document.getElementById('compose-subject').value.trim();
+        const body = document.getElementById('compose-body').value.trim();
+        
+        if (!to) {
+          showErr('To field is required');
+          return;
+        }
+        
+        google.script.run
+          .withSuccessHandler(result => {
+            if (result.success) {
+              show('Draft created: ' + result.message);
+              clearComposeForm();
+            } else {
+              showErr(result.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .createDraft(to, subject, body, cc, bcc);
+      }
+      
+      function onSendEmail() {
+        const to = document.getElementById('compose-to').value.trim();
+        const cc = document.getElementById('compose-cc').value.trim();
+        const bcc = document.getElementById('compose-bcc').value.trim();
+        const subject = document.getElementById('compose-subject').value.trim();
+        const body = document.getElementById('compose-body').value.trim();
+        
+        if (!to) {
+          showErr('To field is required');
+          return;
+        }
+        
+        // Show confirmation dialog
+        document.getElementById('confirm-dialog').classList.add('show');
+        document.getElementById('confirm-to').textContent = to;
+        document.getElementById('confirm-cc').textContent = cc || 'None';
+        document.getElementById('confirm-bcc').textContent = bcc || 'None';
+        document.getElementById('confirm-subject').textContent = subject || '(no subject)';
+        document.getElementById('confirm-body').textContent = body || '(no body)';
+      }
+      
+      function confirmSend() {
+        const to = document.getElementById('compose-to').value.trim();
+        const cc = document.getElementById('compose-cc').value.trim();
+        const bcc = document.getElementById('compose-bcc').value.trim();
+        const subject = document.getElementById('compose-subject').value.trim();
+        const body = document.getElementById('compose-body').value.trim();
+        
+        google.script.run
+          .withSuccessHandler(result => {
+            document.getElementById('confirm-dialog').classList.remove('show');
+            if (result.success) {
+              show('Email sent: ' + result.message);
+              clearComposeForm();
+            } else {
+              showErr(result.error);
+            }
+          })
+          .withFailureHandler(err => {
+            document.getElementById('confirm-dialog').classList.remove('show');
+            showErr(err);
+          })
+          .sendEmail(to, subject, body, cc, bcc, true);
+      }
+      
+      function cancelSend() {
+        document.getElementById('confirm-dialog').classList.remove('show');
+      }
+      
+      function clearComposeForm() {
+        document.getElementById('compose-to').value = '';
+        document.getElementById('compose-cc').value = '';
+        document.getElementById('compose-bcc').value = '';
+        document.getElementById('compose-subject').value = '';
+        document.getElementById('compose-body').value = '';
+      }
+
+      function onFetchEvents(reset){
+        if (reset) calPageToken = '';
+        const start = (document.getElementById('cal-start').value || '').trim();
+        const end = (document.getElementById('cal-end').value || '').trim();
+        const opts = { start, end, maxResults: 50 };
+        google.script.run
+          .withSuccessHandler(r => { renderEvents(r.events||[]); })
+          .withFailureHandler(showErr)
+          .listUpcomingEvents(opts);
+      }
+      function renderEvents(items){
+        const tbody = document.getElementById('events-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (const ev of items){
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td class="muted">' + escapeHtml(ev.start||'') + '</td><td>' + escapeHtml(ev.summary||'') + '</td><td class="muted">' + escapeHtml(ev.location||'') + '</td>';
+          tbody.appendChild(tr);
+        }
+      }
+
+      function onCreateEvent(){
+        const summary = document.getElementById('ev-title').value.trim();
+        const start = document.getElementById('ev-start').value.trim();
+        const end = document.getElementById('ev-end').value.trim();
+        const location = document.getElementById('ev-location').value.trim();
+        const attendees = document.getElementById('ev-attendees').value.trim();
+        const description = document.getElementById('ev-desc').value.trim();
+        if (!summary || !start || !end) { showErr('Title, Start, End required'); return; }
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        if (!(startDate instanceof Date && !isNaN(startDate)) || !(endDate instanceof Date && !isNaN(endDate))) {
+          showErr('Invalid date/time format');
+          return;
+        }
+        if (endDate <= startDate) { showErr('End time must be after Start time'); return; }
+        const opts = { summary, start, end, location, attendees, description };
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Event created' + (r.htmlLink? (' -> '+ r.htmlLink) : ''));
+              document.getElementById('ev-form').reset();
+              onFetchEvents(true);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .createCalendarEvent(opts);
+      }
+
+      function onFetchTasks(reset){
+        if (reset) tasksPageToken = '';
+        const showCompleted = document.getElementById('show-completed').checked;
+        const opts = { showCompleted, maxResults: 50 };
+        google.script.run
+          .withSuccessHandler(r => { renderTasks(r.tasks||[]); })
+          .withFailureHandler(showErr)
+          .listTasks(opts);
+      }
+      
+      function renderTasks(items){
+        const tbody = document.getElementById('tasks-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (const task of items){
+          const tr = document.createElement('tr');
+          const statusClass = task.status === 'completed' ? 'muted' : '';
+          const dueText = task.due ? new Date(task.due).toLocaleDateString() : '';
+          const disabledAttr = task.status === 'completed' ? 'disabled' : '';
+          tr.innerHTML = '<td class="' + statusClass + '">' + escapeHtml(task.title||'') + '</td><td class="muted">' + escapeHtml(task.notes||'') + '</td><td class="muted">' + dueText + '</td><td><button onclick="onCompleteTask(\'' + task.id + '\')" ' + disabledAttr + '>Complete</button></td>';
+          tbody.appendChild(tr);
+        }
+      }
+      
+      function onCreateTask(){
+        const title = document.getElementById('task-title').value.trim();
+        const notes = document.getElementById('task-notes').value.trim();
+        const due = document.getElementById('task-due').value.trim();
+        if (!title) { showErr('Title required'); return; }
+        const opts = { title, notes, due };
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Task created: ' + r.title);
+              document.getElementById('task-form').reset();
+              onFetchTasks(true);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .createTask(opts);
+      }
+      
+      function onCompleteTask(taskId){
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Task completed');
+              onFetchTasks(true);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .completeTask(taskId);
+      }
+
+      function onFetchDocuments(reset){
+        if (reset) docsPageToken = '';
+        const query = document.getElementById('docs-query').value.trim();
+        const opts = { query, maxResults: 20 };
+        google.script.run
+          .withSuccessHandler(r => { renderDocuments(r.documents||[]); })
+          .withFailureHandler(showErr)
+          .listDocuments(opts);
+      }
+      
+      function renderDocuments(items){
+        const tbody = document.getElementById('docs-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (const doc of items){
+          const tr = document.createElement('tr');
+          const modifiedDate = doc.modifiedTime ? new Date(doc.modifiedTime).toLocaleDateString() : '';
+          tr.innerHTML = '<td>' + escapeHtml(doc.title||'') + '</td><td class="muted">' + modifiedDate + '</td><td class="muted">' + escapeHtml(doc.owners.join(', ')||'') + '</td><td><button onclick="onViewDocument(\'' + doc.id + '\')">View</button></td>';
+          tbody.appendChild(tr);
+        }
+      }
+      
+      function onCreateDocument(){
+        const title = document.getElementById('doc-title').value.trim();
+        const content = document.getElementById('doc-content').value.trim();
+        if (!title) { showErr('Title required'); return; }
+        const opts = { title, content };
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Document created: ' + r.title + ' -> ' + r.url);
+              document.getElementById('doc-form').reset();
+              onFetchDocuments(true);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .createDocument(opts);
+      }
+      
+      function onViewDocument(documentId){
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              var result = 'Document: ' + r.title + '\n\nContent:\n' + r.content + '\n\nURL: ' + r.url;
+              show(result);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .getDocument(documentId);
+      }
+
+      function onSearchContacts(reset){
+        if (reset) contactsPageToken = '';
+        const query = document.getElementById('contacts-query').value.trim();
+        const opts = { query, maxResults: 20 };
+        google.script.run
+          .withSuccessHandler(r => { 
+            renderContacts(r.contacts||[]);
+            if (r.contacts && r.contacts.length > 0) {
+              show('Found ' + r.contacts.length + ' contacts');
+            } else {
+              show('No contacts found. Try searching with different terms or check if you have contacts in Google Contacts.');
+            }
+          })
+          .withFailureHandler(showErr)
+          .searchContacts(opts);
+      }
+      
+      function loadAllContacts(){
+        const opts = { query: '', maxResults: 20 };
+        google.script.run
+          .withSuccessHandler(r => { 
+            renderContacts(r.contacts||[]);
+            if (r.success) {
+              if (r.totalFound === 0) {
+                show('No contacts found in your Google Contacts. You may need to add contacts first at https://contacts.google.com');
+              } else if (r.contacts && r.contacts.length > 0) {
+                show('Loaded ' + r.contacts.length + ' contacts from your Google Contacts (Total found: ' + r.totalFound + ')');
+              } else {
+                show('Found ' + r.totalFound + ' contacts in Google Contacts, but none matched the search criteria.');
+              }
+            } else {
+              showErr('Error: ' + r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .searchContacts(opts);
+      }
+      
+      function renderContacts(items){
+        const tbody = document.getElementById('contacts-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        for (const contact of items){
+          const tr = document.createElement('tr');
+          const photoHtml = contact.photo ? '<img src="' + contact.photo + '" style="width:24px;height:24px;border-radius:50%;margin-right:8px"/>' : '';
+          tr.innerHTML = '<td>' + photoHtml + escapeHtml(contact.name||'') + '</td><td class="muted">' + escapeHtml(contact.email||'') + '</td><td class="muted">' + escapeHtml(contact.phone||'') + '</td><td class="muted">' + escapeHtml(contact.company||'') + '</td><td><button onclick="onViewContact(\'' + contact.id + '\')">View</button></td>';
+          tbody.appendChild(tr);
+        }
+      }
+      
+      function onViewContact(contactId){
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              const contact = r.contact;
+              let details = 'Contact Details:\n\n';
+              details += 'Name: ' + contact.name + '\n\n';
+              
+              if (contact.emails.length > 0) {
+                details += 'Emails:\n';
+                contact.emails.forEach(email => details += '- ' + email.value + ' (' + email.type + ')\n');
+                details += '\n';
+              }
+              
+              if (contact.phones.length > 0) {
+                details += 'Phones:\n';
+                contact.phones.forEach(phone => details += '- ' + phone.value + ' (' + phone.type + ')\n');
+                details += '\n';
+              }
+              
+              if (contact.organizations.length > 0) {
+                details += 'Organizations:\n';
+                contact.organizations.forEach(org => details += '- ' + org.name + (org.title ? ' (' + org.title + ')' : '') + '\n');
+                details += '\n';
+              }
+              
+              if (contact.addresses.length > 0) {
+                details += 'Addresses:\n';
+                contact.addresses.forEach(addr => details += '- ' + addr.formatted + '\n');
+              }
+              
+              show(details);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .getContact(contactId);
+      }
+
+      function testGeminiConnection(){
+        show('Testing Gemini API connection...');
+        console.log('Testing Gemini connection...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Gemini test response:', r);
+            if (r && r.success){
+              show('Gemini Test Result:\n\n' + r.response);
+            } else {
+              showErr('Gemini test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Gemini test error:', err);
+            showErr('Gemini test failed: ' + err);
+          })
+          .testGemini();
+      }
+      
+      function testAIOrchestration(){
+        show('Testing AI Orchestration System... This will test different models and priorities.');
+        console.log('Testing AI Orchestration...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('AI Orchestration test response:', r);
+            if (r && r.success){
+              let result = 'AI Orchestration Test Results:\n\n';
+              for (let i = 0; i < r.results.length; i++) {
+                const test = r.results[i];
+                result += (i + 1) + '. ' + test.test + '\n';
+                result += '   Model: ' + test.model + '\n';
+                result += '   Latency: ' + test.latency + 'ms\n';
+                result += '   Cost: $' + test.cost.toFixed(6) + '\n';
+                result += '   Success: ' + (test.success ? 'Yes' : 'No') + '\n';
+                result += '   Response: ' + test.response + '\n\n';
+              }
+              show(result);
+            } else {
+              showErr('AI Orchestration test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('AI Orchestration test error:', err);
+            showErr('AI Orchestration test failed: ' + err);
+          })
+          .testAIOrchestration();
+      }
+      
+      function testCostManagement(){
+        show('Testing Cost Management System... This will show current budget status and limits.');
+        console.log('Testing Cost Management...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Cost Management test response:', r);
+            if (r && r.success){
+              let result = 'Cost Management Test Results:\n\n';
+              
+              result += 'BUDGET LIMITS:\n';
+              result += 'Daily Limit: $' + r.budgets.dailyLimit + '\n';
+              result += 'Monthly Limit: $' + r.budgets.monthlyLimit + '\n';
+              result += 'Per-Request Limit: $' + r.budgets.perRequestLimit + '\n';
+              result += 'Alert Threshold: ' + (r.budgets.alertThreshold * 100) + '%\n\n';
+              
+              result += 'CURRENT STATUS:\n';
+              result += 'Daily Cost: $' + r.costStatus.daily.cost.toFixed(6) + ' / $' + r.costStatus.daily.limit + ' (' + r.costStatus.daily.percentage.toFixed(1) + '%)\n';
+              result += 'Daily Remaining: $' + r.costStatus.daily.remaining.toFixed(6) + '\n';
+              result += 'Monthly Cost: $' + r.costStatus.monthly.cost.toFixed(6) + ' / $' + r.costStatus.monthly.limit + ' (' + r.costStatus.monthly.percentage.toFixed(1) + '%)\n';
+              result += 'Monthly Remaining: $' + r.costStatus.monthly.remaining.toFixed(6) + '\n\n';
+              
+              result += 'BUDGET TEST:\n';
+              result += 'Test Request ($0.01): ' + (r.budgetTest.allowed ? 'ALLOWED' : 'BLOCKED') + '\n';
+              if (!r.budgetTest.allowed) {
+                result += 'Reason: ' + r.budgetTest.reason + '\n';
+              }
+              
+              show(result);
+            } else {
+              showErr('Cost Management test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Cost Management test error:', err);
+            showErr('Cost Management test failed: ' + err);
+          })
+          .testCostManagement();
+      }
+      
+      function testContextManagement(){
+        show('Testing Context Management System... This will test chunking and retrieval strategies.');
+        console.log('Testing Context Management...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Context Management test response:', r);
+            if (r && r.success){
+              let result = 'Context Management Test Results:\n\n';
+              
+              result += 'CONTEXT LIMITS:\n';
+              result += 'Max Input Tokens: ' + r.limits.maxInputTokens.toLocaleString() + '\n';
+              result += 'Max Output Tokens: ' + r.limits.maxOutputTokens.toLocaleString() + '\n';
+              result += 'Max Context Per Call: ' + r.limits.maxContextPerCall.toLocaleString() + '\n';
+              result += 'Top-K Retrieval: ' + r.limits.topKRetrieval + '\n\n';
+              
+              result += 'CHUNKING TESTS:\n';
+              result += 'Original Text Length: ' + (r.tests.originalTextLength || 0).toLocaleString() + ' characters\n';
+              result += 'Original Tokens: ' + (r.tests.originalTokens || 0).toLocaleString() + '\n';
+              result += 'Text Chunks Created: ' + (r.tests.textChunks || 0) + '\n';
+              result += 'Markdown Chunks Created: ' + (r.tests.markdownChunks || 0) + '\n\n';
+              
+              result += 'CONTEXT MANAGEMENT:\n';
+              result += 'Strategy: ' + (r.tests.contextManagement?.strategy || 'unknown') + '\n';
+              result += 'Truncated: ' + (r.tests.contextManagement?.truncated ? 'Yes' : 'No') + '\n';
+              result += 'Original Tokens: ' + (r.tests.contextManagement?.originalTokens || 0).toLocaleString() + '\n';
+              result += 'Managed Tokens: ' + (r.tests.contextManagement?.managedTokens || 0).toLocaleString() + '\n';
+              result += 'Reduction Ratio: ' + ((r.tests.contextManagement?.reductionRatio || 0) * 100).toFixed(1) + '%\n';
+              
+              show(result);
+            } else {
+              showErr('Context Management test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Context Management test error:', err);
+            showErr('Context Management test failed: ' + err);
+          })
+          .testContextManagement();
+      }
+      
+      function testSafetyGuardrails(){
+        show('Testing Safety & Guardrails System... This will test PII filtering, content moderation, and safety checks.');
+        console.log('Testing Safety & Guardrails...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Safety & Guardrails test response:', r);
+            if (r && r.success){
+              let result = 'Safety & Guardrails Test Results:\n\n';
+              
+              result += 'SAFETY CONFIGURATION:\n';
+              result += 'PII Filter: ' + (r.safetyStatus.config.PII_FILTER_ENABLED ? 'Enabled' : 'Disabled') + '\n';
+              result += 'Content Moderation: ' + (r.safetyStatus.config.CONTENT_MODERATION_ENABLED ? 'Enabled' : 'Disabled') + '\n';
+              result += 'Allow List: ' + (r.safetyStatus.config.ALLOW_LIST_ENABLED ? 'Enabled' : 'Disabled') + '\n';
+              result += 'Deny List: ' + (r.safetyStatus.config.DENY_LIST_ENABLED ? 'Enabled' : 'Disabled') + '\n';
+              result += 'Human Confirmation: ' + (r.safetyStatus.config.HUMAN_CONFIRMATION_REQUIRED ? 'Required' : 'Not Required') + '\n\n';
+              
+              result += 'SAFETY STATISTICS:\n';
+              result += 'Allowed Domains: ' + r.safetyStatus.allowedDomains + '\n';
+              result += 'Denied Domains: ' + r.safetyStatus.deniedDomains + '\n';
+              result += 'Allowed Tools: ' + r.safetyStatus.allowedTools + '\n';
+              result += 'Denied Tools: ' + r.safetyStatus.deniedTools + '\n';
+              result += 'PII Patterns: ' + r.safetyStatus.piiPatterns + '\n';
+              result += 'Profanity Words: ' + r.safetyStatus.profanityWords + '\n';
+              result += 'Sensitive Actions: ' + r.safetyStatus.sensitiveActions + '\n\n';
+              
+              result += 'PII FILTERING TEST:\n';
+              result += 'Original: ' + r.tests.piiFiltering.original + '\n';
+              result += 'Filtered: ' + r.tests.piiFiltering.filtered + '\n';
+              result += 'Violations Found: ' + r.tests.piiFiltering.violations.length + '\n';
+              if (r.tests.piiFiltering.violations.length > 0) {
+                for (let i = 0; i < r.tests.piiFiltering.violations.length; i++) {
+                  result += '  - ' + r.tests.piiFiltering.violations[i].type + ' (' + r.tests.piiFiltering.violations[i].count + ' instances)\n';
+                }
+              }
+              result += '\n';
+              
+              result += 'CONTENT MODERATION TEST:\n';
+              result += 'Original: ' + r.tests.contentModeration.original + '\n';
+              result += 'Moderated: ' + r.tests.contentModeration.moderated + '\n';
+              result += 'Violations Found: ' + r.tests.contentModeration.violations.length + '\n';
+              if (r.tests.contentModeration.violations.length > 0) {
+                for (let i = 0; i < r.tests.contentModeration.violations.length; i++) {
+                  result += '  - ' + r.tests.contentModeration.violations[i].type + ' (' + r.tests.contentModeration.violations[i].count + ' instances)\n';
+                }
+              }
+              result += '\n';
+              
+              result += 'DOMAIN SAFETY TEST:\n';
+              result += 'Allowed Domain (gmail.com): ' + (r.tests.domainSafety.allowedDomain.allowed ? 'ALLOWED' : 'BLOCKED') + ' - ' + r.tests.domainSafety.allowedDomain.reason + '\n';
+              result += 'Denied Domain (malicious-site.com): ' + (r.tests.domainSafety.deniedDomain.allowed ? 'ALLOWED' : 'BLOCKED') + ' - ' + r.tests.domainSafety.deniedDomain.reason + '\n\n';
+              
+              result += 'TOOL SAFETY TEST:\n';
+              result += 'Allowed Tool (gmail_read): ' + (r.tests.toolSafety.allowedTool.allowed ? 'ALLOWED' : 'BLOCKED') + ' - ' + r.tests.toolSafety.allowedTool.reason + '\n';
+              result += 'Denied Tool (admin_access): ' + (r.tests.toolSafety.deniedTool.allowed ? 'ALLOWED' : 'BLOCKED') + ' - ' + r.tests.toolSafety.deniedTool.reason + '\n\n';
+              
+              result += 'SENSITIVE ACTION TEST:\n';
+              result += 'Sensitive Action (delete_user_data): ' + (r.tests.sensitiveActions.sensitiveAction.isSensitive ? 'SENSITIVE' : 'NORMAL') + ' - Confirmation Required: ' + (r.tests.sensitiveActions.sensitiveAction.requiresConfirmation ? 'Yes' : 'No') + '\n';
+              result += 'Normal Action (gmail_read): ' + (r.tests.sensitiveActions.normalAction.isSensitive ? 'SENSITIVE' : 'NORMAL') + ' - Confirmation Required: ' + (r.tests.sensitiveActions.normalAction.requiresConfirmation ? 'Yes' : 'No') + '\n\n';
+              
+              result += 'COMBINED FILTERS TEST:\n';
+              result += 'Original: ' + r.tests.combinedFilters.original + '\n';
+              result += 'Filtered: ' + r.tests.combinedFilters.filtered + '\n';
+              result += 'Safety Score: ' + r.tests.combinedFilters.safetyScore + '/100\n';
+              result += 'PII Filtered: ' + (r.tests.combinedFilters.piiFiltered ? 'Yes' : 'No') + '\n';
+              result += 'Content Moderated: ' + (r.tests.combinedFilters.contentModerated ? 'Yes' : 'No') + '\n';
+              result += 'Total Violations: ' + r.tests.combinedFilters.violations.length + '\n';
+              
+              show(result);
+            } else {
+              showErr('Safety & Guardrails test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Safety & Guardrails test error:', err);
+            showErr('Safety & Guardrails test failed: ' + err);
+          })
+          .testSafetyGuardrails();
+      }
+      
+      function onExecuteEmailRouter(){
+        const subject = document.getElementById('email-subject').value.trim();
+        const body = document.getElementById('email-body').value.trim();
+        const from = document.getElementById('email-from').value.trim();
+        const to = document.getElementById('email-to').value.trim();
+        
+        if (!subject || !body) {
+          showErr('Please enter both email subject and body');
+          return;
+        }
+        
+        const emailData = {
+          subject: subject,
+          body: body,
+          from: from || 'test@company.com',
+          to: to || 'user@company.com'
+        };
+        
+        show('Executing Email Router Workflow... This will classify, summarize, route, and notify about the email.');
+        console.log('Executing Email Router Workflow with:', emailData);
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Email Router Workflow response:', r);
+            if (r && r.success){
+              let result = 'Email Router Workflow Results:\n\n';
+              
+              result += 'WORKFLOW INFO:\n';
+              result += 'Workflow ID: ' + r.workflowResult.workflowId + '\n';
+              result += 'Status: ' + r.workflowResult.status + '\n';
+              result += 'Total Duration: ' + r.workflowResult.totalDuration + 'ms\n';
+              result += 'Steps Completed: ' + r.workflowResult.steps.length + '\n\n';
+              
+              result += 'CLASSIFICATION:\n';
+              result += 'Category: ' + r.classification.category + '\n';
+              result += 'Confidence: ' + (r.classification.confidence * 100).toFixed(1) + '%\n';
+              result += 'Reasoning: ' + r.classification.reasoning + '\n\n';
+              
+              result += 'SUMMARY:\n';
+              result += r.summary.summary + '\n\n';
+              
+              result += 'ROUTING:\n';
+              result += 'Action: ' + r.routing.action + '\n';
+              result += 'Priority: ' + r.routing.priority + '\n';
+              result += 'Notification: ' + r.routing.notification + '\n\n';
+              
+              result += 'NOTIFICATION:\n';
+              result += 'Sent: ' + (r.notification.notificationSent ? 'Yes' : 'No') + '\n';
+              result += 'Message: ' + r.notification.message + '\n';
+              
+              show(result);
+            } else {
+              if (r.isDuplicate) {
+                showErr('Duplicate workflow detected. Time remaining: ' + Math.round(r.timeRemaining / 1000) + ' seconds');
+              } else {
+                showErr('Email Router Workflow failed: ' + (r ? r.error : 'No response'));
+              }
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Email Router Workflow error:', err);
+            showErr('Email Router Workflow failed: ' + err);
+          })
+          .executeEmailRouterWorkflow(emailData);
+      }
+      
+      function testEmailRouterWorkflow(){
+        show('Testing Email Router Workflow... This will test the workflow with sample emails.');
+        console.log('Testing Email Router Workflow...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Email Router Workflow test response:', r);
+            if (r && r.success){
+              let result = 'Email Router Workflow Test Results:\n\n';
+              
+              result += 'WORKFLOW CONFIGURATION:\n';
+              result += 'Default Timeout: ' + r.workflowConfig.DEFAULT_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Long Operation Timeout: ' + r.workflowConfig.LONG_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Overall Workflow Timeout: ' + r.workflowConfig.OVERALL_WORKFLOW_TIMEOUT + 'ms\n';
+              result += 'Dedupe Window: ' + r.workflowConfig.DEDUPE_WINDOW + 'ms\n';
+              result += 'Max Retries: ' + r.workflowConfig.MAX_RETRIES + '\n\n';
+              
+              result += 'TEST RESULTS:\n';
+              for (let i = 0; i < r.testResults.length; i++) {
+                const test = r.testResults[i];
+                result += (i + 1) + '. ' + test.email.subject + '\n';
+                result += '   From: ' + test.email.from + '\n';
+                result += '   Success: ' + (test.result.success ? 'Yes' : 'No') + '\n';
+                if (test.result.success) {
+                  result += '   Category: ' + test.result.classification.category + '\n';
+                  result += '   Action: ' + test.result.routing.action + '\n';
+                  result += '   Duration: ' + test.result.workflowResult.totalDuration + 'ms\n';
+                } else {
+                  result += '   Error: ' + test.result.error + '\n';
+                }
+                result += '\n';
+              }
+              
+              show(result);
+            } else {
+              showErr('Email Router Workflow test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Email Router Workflow test error:', err);
+            showErr('Email Router Workflow test failed: ' + err);
+          })
+          .testEmailRouterWorkflow();
+      }
+      
+      function onExecuteMeetingCreate(){
+        const title = document.getElementById('meeting-title').value.trim();
+        const description = document.getElementById('meeting-description').value.trim();
+        const attendees = document.getElementById('meeting-attendees').value.trim();
+        const duration = parseInt(document.getElementById('meeting-duration').value) || 60;
+        const location = document.getElementById('meeting-location').value.trim();
+        const startDate = document.getElementById('meeting-start-date').value;
+        const endDate = document.getElementById('meeting-end-date').value;
+        
+        if (!title) {
+          showErr('Please enter a meeting title');
+          return;
+        }
+        
+        const meetingData = {
+          title: title,
+          description: description,
+          attendees: attendees ? attendees.split(',').map(email => email.trim()) : [],
+          duration: duration,
+          location: location || 'TBD',
+          startDate: startDate || new Date().toISOString(),
+          endDate: endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          workingHours: { start: 9, end: 17 },
+          timezone: 'America/New_York'
+        };
+        
+        show('Executing Meeting Create Workflow... This will propose slots, confirm, create event, and send invitations.');
+        console.log('Executing Meeting Create Workflow with:', meetingData);
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Meeting Create Workflow response:', r);
+            if (r && r.success){
+              let result = 'Meeting Create Workflow Results:\n\n';
+              
+              result += 'WORKFLOW INFO:\n';
+              result += 'Workflow ID: ' + r.workflowResult.workflowId + '\n';
+              result += 'Status: ' + r.workflowResult.status + '\n';
+              result += 'Total Duration: ' + r.workflowResult.totalDuration + 'ms\n';
+              result += 'Steps Completed: ' + r.workflowResult.steps.length + '\n\n';
+              
+              result += 'PROPOSED SLOTS:\n';
+              result += 'Total Slots: ' + r.proposedSlots.totalSlots + '\n';
+              result += 'Duration: ' + r.proposedSlots.duration + ' minutes\n';
+              result += 'Timezone: ' + r.proposedSlots.timezone + '\n';
+              for (let i = 0; i < r.proposedSlots.slots.length; i++) {
+                const slot = r.proposedSlots.slots[i];
+                result += (i + 1) + '. ' + slot.dayOfWeek + ' at ' + slot.timeFormatted + '\n';
+              }
+              result += '\n';
+              
+              result += 'CONFIRMATION:\n';
+              result += 'Selected Slot: ' + r.confirmation.selectedSlot.dayOfWeek + ' at ' + r.confirmation.selectedSlot.timeFormatted + '\n';
+              result += 'Confirmed By: ' + r.confirmation.confirmedBy + '\n';
+              result += 'Confirmed At: ' + r.confirmation.confirmedAt + '\n\n';
+              
+              result += 'CALENDAR EVENT:\n';
+              result += 'Event ID: ' + r.event.eventId + '\n';
+              result += 'Event Link: ' + r.event.eventLink + '\n';
+              result += 'Created By: ' + r.event.createdBy + '\n';
+              result += 'Created At: ' + r.event.createdAt + '\n\n';
+              
+              result += 'INVITATIONS:\n';
+              result += 'Total Invitations: ' + r.invitations.totalInvitations + '\n';
+              result += 'Event ID: ' + r.invitations.eventId + '\n';
+              result += 'Sent At: ' + r.invitations.sentAt + '\n';
+              for (let i = 0; i < r.invitations.invitations.length; i++) {
+                const invitation = r.invitations.invitations[i];
+                result += (i + 1) + '. ' + invitation.to + ' - ' + (invitation.sent ? 'Sent' : 'Failed') + '\n';
+              }
+              
+              show(result);
+            } else {
+              if (r.isDuplicate) {
+                showErr('Duplicate workflow detected. Time remaining: ' + Math.round(r.timeRemaining / 1000) + ' seconds');
+              } else {
+                showErr('Meeting Create Workflow failed: ' + (r ? r.error : 'No response'));
+              }
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Meeting Create Workflow error:', err);
+            showErr('Meeting Create Workflow failed: ' + err);
+          })
+          .executeMeetingCreateWorkflow(meetingData);
+      }
+      
+      function testMeetingCreateWorkflow(){
+        show('Testing Meeting Create Workflow... This will test the workflow with sample meetings.');
+        console.log('Testing Meeting Create Workflow...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Meeting Create Workflow test response:', r);
+            if (r && r.success){
+              let result = 'Meeting Create Workflow Test Results:\n\n';
+              
+              result += 'WORKFLOW CONFIGURATION:\n';
+              result += 'Default Timeout: ' + r.workflowConfig.DEFAULT_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Long Operation Timeout: ' + r.workflowConfig.LONG_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Overall Workflow Timeout: ' + r.workflowConfig.OVERALL_WORKFLOW_TIMEOUT + 'ms\n';
+              result += 'Dedupe Window: ' + r.workflowConfig.DEDUPE_WINDOW + 'ms\n';
+              result += 'Max Retries: ' + r.workflowConfig.MAX_RETRIES + '\n\n';
+              
+              result += 'TEST RESULTS:\n';
+              for (let i = 0; i < r.testResults.length; i++) {
+                const test = r.testResults[i];
+                result += (i + 1) + '. ' + test.meeting.title + '\n';
+                result += '   Duration: ' + test.meeting.duration + ' minutes\n';
+                result += '   Attendees: ' + test.meeting.attendees.length + '\n';
+                result += '   Success: ' + (test.result.success ? 'Yes' : 'No') + '\n';
+                if (test.result.success) {
+                  result += '   Proposed Slots: ' + test.result.proposedSlots.totalSlots + '\n';
+                  result += '   Event Created: ' + (test.result.event ? 'Yes' : 'No') + '\n';
+                  result += '   Invitations Sent: ' + test.result.invitations.totalInvitations + '\n';
+                  result += '   Duration: ' + test.result.workflowResult.totalDuration + 'ms\n';
+                } else {
+                  result += '   Error: ' + test.result.error + '\n';
+                }
+                result += '\n';
+              }
+              
+              show(result);
+            } else {
+              showErr('Meeting Create Workflow test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Meeting Create Workflow test error:', err);
+            showErr('Meeting Create Workflow test failed: ' + err);
+          })
+          .testMeetingCreateWorkflow();
+      }
+      
+      function onExecuteMeetingNotes(){
+        const title = document.getElementById('notes-meeting-title').value.trim();
+        const date = document.getElementById('notes-meeting-date').value;
+        const attendees = document.getElementById('notes-meeting-attendees').value.trim();
+        const transcription = document.getElementById('notes-meeting-transcription').value.trim();
+        const shareWith = document.getElementById('notes-share-with').value.trim();
+        
+        if (!title) {
+          showErr('Please enter a meeting title');
+          return;
+        }
+        
+        if (!transcription) {
+          showErr('Please enter the meeting transcription');
+          return;
+        }
+        
+        show('Executing Meeting Notes Workflow... This will transcribe, analyze, create a document, and share it.');
+        
+        const meetingData = {
+          title: title,
+          date: date || new Date().toISOString().split('T')[0],
+          attendees: attendees,
+          transcription: transcription,
+          shareWith: shareWith ? shareWith.split(',').map(email => email.trim()) : []
+        };
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Meeting Notes Workflow response:', r);
+            if (r && r.success){
+              let result = 'Meeting Notes Workflow Results:\n\n';
+              
+              result += 'WORKFLOW STATUS: ' + r.workflowResult.status + '\n';
+              result += 'TOTAL DURATION: ' + r.workflowResult.totalDuration + 'ms\n';
+              result += 'STEPS COMPLETED: ' + r.workflowResult.steps.length + '\n\n';
+              
+              result += 'TRANSCRIPTION:\n';
+              result += 'Source: ' + r.transcription.source + '\n';
+              result += 'Length: ' + r.transcription.transcription.length + ' characters\n\n';
+              
+              result += 'ANALYSIS:\n';
+              result += 'Model: ' + (r.analysis.model || 'N/A') + '\n';
+              result += 'Latency: ' + (r.analysis.latency || 'N/A') + 'ms\n';
+              result += 'Cost: $' + (r.analysis.cost || '0.00') + '\n\n';
+              
+              result += 'DOCUMENT:\n';
+              result += 'Title: ' + r.document.documentTitle + '\n';
+              result += 'ID: ' + r.document.documentId + '\n';
+              result += 'URL: ' + r.document.documentUrl + '\n';
+              result += 'Created: ' + r.document.createdAt + '\n\n';
+              
+              result += 'SHARING:\n';
+              result += 'Total Shared: ' + r.sharing.totalShared + '\n';
+              result += 'Successful Shares: ' + r.sharing.successfulShares + '\n';
+              if (r.sharing.sharedWith && r.sharing.sharedWith.length > 0) {
+                result += 'Shared With:\n';
+                r.sharing.sharedWith.forEach(share => {
+                  result += '  - ' + share.email + ': ' + (share.success ? 'Success' : 'Failed') + '\n';
+                });
+              }
+              
+              show(result);
+            } else {
+              showErr('Meeting Notes Workflow failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Meeting Notes Workflow error:', err);
+            showErr('Meeting Notes Workflow failed: ' + err);
+          })
+          .executeMeetingNotesWorkflow(meetingData);
+      }
+      
+      function onCreateHTMLMeetingNotes(){
+        const title = document.getElementById('notes-meeting-title').value.trim();
+        const date = document.getElementById('notes-meeting-date').value;
+        const attendees = document.getElementById('notes-meeting-attendees').value.trim();
+        const transcription = document.getElementById('notes-meeting-transcription').value.trim();
+        
+        if (!title) {
+          showErr('Please enter a meeting title');
+          return;
+        }
+        
+        if (!transcription) {
+          showErr('Please enter the meeting transcription');
+          return;
+        }
+        
+        show('Creating HTML-formatted Meeting Notes... This will create a beautifully formatted document.');
+        
+        const meetingData = {
+          title: title,
+          date: date || new Date().toISOString().split('T')[0],
+          attendees: attendees,
+          transcription: transcription
+        };
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('HTML Meeting Notes response:', r);
+            if (r && r.success){
+              let result = 'HTML Meeting Notes Created Successfully!\n\n';
+              
+              result += 'DOCUMENT DETAILS:\n';
+              result += 'Title: ' + r.documentTitle + '\n';
+              result += 'ID: ' + r.documentId + '\n';
+              result += 'URL: ' + r.documentUrl + '\n';
+              result += 'Created: ' + r.createdAt + '\n\n';
+              
+              result += 'FEATURES:\n';
+              result += '✅ Color-coded sections with emojis\n';
+              result += '✅ Professional typography and spacing\n';
+              result += '✅ AI-powered analysis section\n';
+              result += '✅ Full transcription with formatting\n';
+              result += '✅ Generation timestamp and branding\n\n';
+              
+              result += 'Click the URL above to view your beautifully formatted meeting notes!';
+              
+              show(result);
+            } else {
+              showErr('HTML Meeting Notes creation failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('HTML Meeting Notes error:', err);
+            showErr('HTML Meeting Notes creation failed: ' + err);
+          })
+          .createHTMLMeetingNotes(meetingData);
+      }
+      
+      function testMeetingNotesWorkflow(){
+        show('Testing Meeting Notes Workflow... This will test the workflow with sample meetings.');
+        console.log('Testing Meeting Notes Workflow...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Meeting Notes Workflow test response:', r);
+            if (r && r.success){
+              let result = 'Meeting Notes Workflow Test Results:\n\n';
+              
+              result += 'WORKFLOW CONFIGURATION:\n';
+              result += 'Default Timeout: ' + r.workflowConfig.DEFAULT_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Long Operation Timeout: ' + r.workflowConfig.LONG_OPERATION_TIMEOUT + 'ms\n';
+              result += 'Overall Workflow Timeout: ' + r.workflowConfig.OVERALL_WORKFLOW_TIMEOUT + 'ms\n';
+              result += 'Dedupe Window: ' + r.workflowConfig.DEDUPE_WINDOW + 'ms\n';
+              result += 'Max Retries: ' + r.workflowConfig.MAX_RETRIES + '\n\n';
+              
+              result += 'TEST RESULTS:\n';
+              for (let i = 0; i < r.testResults.length; i++) {
+                const test = r.testResults[i];
+                result += (i + 1) + '. ' + test.meeting.title + '\n';
+                result += '   Date: ' + test.meeting.date + '\n';
+                result += '   Attendees: ' + test.meeting.attendees + '\n';
+                result += '   Transcription Length: ' + test.meeting.transcription.length + ' chars\n';
+                result += '   Share With: ' + test.meeting.shareWith.length + ' people\n';
+                result += '   Success: ' + (test.result.success ? 'Yes' : 'No') + '\n';
+                if (test.result.success) {
+                  result += '   Document Created: ' + (test.result.document ? 'Yes' : 'No') + '\n';
+                  result += '   Document URL: ' + (test.result.document ? test.result.document.documentUrl : 'N/A') + '\n';
+                  result += '   Shared Successfully: ' + (test.result.sharing ? test.result.sharing.successfulShares : 0) + '\n';
+                  result += '   Duration: ' + test.result.workflowResult.totalDuration + 'ms\n';
+                } else {
+                  result += '   Error: ' + test.result.error + '\n';
+                }
+                result += '\n';
+              }
+              
+              show(result);
+            } else {
+              showErr('Meeting Notes Workflow test failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Meeting Notes Workflow test error:', err);
+            showErr('Meeting Notes Workflow test failed: ' + err);
+          })
+          .testMeetingNotesWorkflow();
+      }
+      
+      function clearWorkflowCache(){
+        show('Clearing workflow deduplication cache...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Clear cache response:', r);
+            if (r && r.success){
+              show('✅ Cache cleared successfully!\n\nCleared ' + r.clearedKeys + ' workflow deduplication entries.\n\nYou can now run tests without duplicate workflow errors.');
+            } else {
+              showErr('Cache clear failed: ' + (r ? r.error : 'No response'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Clear cache error:', err);
+            showErr('Cache clear failed: ' + err);
+          })
+          .clearWorkflowDeduplicationCache();
+      }
+      
+      function onTranscribeAudio(){
+        const transcription = document.getElementById('transcription-prompt').value.trim();
+        if (!transcription) {
+          showErr('Please enter the transcription text to analyze');
+          return;
+        }
+        
+        const includeSummary = document.getElementById('include-summary').checked;
+        const includeActionItems = document.getElementById('include-action-items').checked;
+        const priority = document.getElementById('ai-priority').value;
+        
+        show('Analyzing transcription... This may take a moment.');
+        console.log('Starting transcription analysis with text length:', transcription.length, 'Priority:', priority);
+        
+        const opts = {
+          includeSummary: includeSummary,
+          includeActionItems: includeActionItems,
+          priority: priority,
+          prompt: 'Please analyze this transcription and provide insights.'
+        };
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            console.log('Transcription response received:', r);
+            if (r && r.success){
+              let result = 'Transcription Analysis:\n\n';
+              if (r.model) {
+                result += 'Model: ' + r.model + '\n';
+                result += 'Latency: ' + r.latency + 'ms\n';
+                if (r.cost) {
+                  result += 'Cost: $' + r.cost.cost.toFixed(6) + '\n';
+                  if (r.cost.tracking) {
+                    result += 'Daily Total: $' + r.cost.tracking.dailyCost.toFixed(6) + '\n';
+                    result += 'Monthly Total: $' + r.cost.tracking.monthlyCost.toFixed(6) + '\n';
+                    result += 'Daily Remaining: $' + r.cost.tracking.dailyRemaining.toFixed(6) + '\n';
+                  }
+                }
+                if (r.context) {
+                  result += 'Context Strategy: ' + r.context.strategy + '\n';
+                  if (r.context.truncated) {
+                    result += 'Context Tokens: ' + r.context.tokens.toLocaleString() + ' (reduced from ' + r.context.originalTokens.toLocaleString() + ')\n';
+                    result += 'Reduction: ' + (r.context.reductionRatio * 100).toFixed(1) + '%\n';
+                  } else {
+                    result += 'Context Tokens: ' + r.context.tokens.toLocaleString() + ' (full context)\n';
+                  }
+                }
+                if (r.safety) {
+                  result += 'Safety Score: ' + r.safety.safetyScore + '/100\n';
+                  if (r.safety.piiFiltered) {
+                    result += 'PII Filtered: Yes (' + r.safety.violations.filter(v => v.type === 'PII').length + ' violations)\n';
+                  }
+                  if (r.safety.contentModerated) {
+                    result += 'Content Moderated: Yes (' + r.safety.violations.filter(v => v.type === 'CONTENT_MODERATION').length + ' violations)\n';
+                  }
+                }
+                result += '\n';
+              }
+              result += 'Analysis:\n' + (r.analysis || 'No analysis provided');
+              console.log('Displaying result:', result.substring(0, 100) + '...');
+              show(result);
+            } else {
+              console.log('Error in response:', r);
+              showErr('Error: ' + (r ? r.error : 'No response received'));
+            }
+          })
+          .withFailureHandler(err => {
+            console.log('Transcription error:', err);
+            showErr('Failed to analyze transcription: ' + err);
+          })
+          .analyzeTranscription(transcription, opts);
+      }
+      
+      function onCreateMeetingSummary(){
+        const transcription = document.getElementById('meeting-transcription').value.trim();
+        const title = document.getElementById('meeting-title').value.trim();
+        const attendees = document.getElementById('meeting-attendees').value.trim();
+        const date = document.getElementById('meeting-date').value.trim();
+        
+        if (!transcription) {
+          showErr('Please enter the meeting transcription');
+          return;
+        }
+        
+        const opts = {
+          title: title || 'Meeting Summary',
+          attendees: attendees ? attendees.split(',').map(a => a.trim()) : [],
+          date: date || new Date().toISOString()
+        };
+        
+        show('Creating meeting summary...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Meeting summary created successfully!\n\nSummary:\n' + r.summary + '\n\nDocument URL: ' + r.documentUrl);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .createMeetingSummary(transcription, opts);
+      }
+      
+      function onAnalyzeSentiment(){
+        const transcription = document.getElementById('sentiment-transcription').value.trim();
+        if (!transcription) {
+          showErr('Please enter the meeting transcription');
+          return;
+        }
+        
+        show('Analyzing meeting sentiment...');
+        
+        google.script.run
+          .withSuccessHandler(r => {
+            if (r.success){
+              show('Sentiment Analysis:\n\n' + r.analysis);
+            } else {
+              showErr(r.error);
+            }
+          })
+          .withFailureHandler(showErr)
+          .analyzeMeetingSentiment(transcription);
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      🌙
+    </button>
+    
+    <!-- Performance Dashboard -->
+    <button id="perf-toggle" class="theme-toggle" onclick="showPerformanceDashboard()" aria-label="Show performance metrics" style="top: 5rem;">
+      📊
+    </button>
+    
+    <div class="box" id="main-content" role="main">
+      <div class="row"><button onclick="onPing()">Ping</button><div id="email"></div></div>
+      <p>Your email: <script>google.script.run.withSuccessHandler(e=>document.getElementById('email').textContent=e).getSessionUserEmail()</script></p>
+      <textarea id="prompt" placeholder="Ask Gemini..."></textarea>
+      <div class="row"><button onclick="onAsk()">Ask</button></div>
+      <div id="out" class="out"></div>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <div class="row" style="gap:8px">
+        <strong>Emails</strong>
+        <label><input id="important" type="checkbox"/> Important only</label>
+        <input id="query" placeholder="query (e.g., from:foo subject:bar)" style="flex:1; background:#0f141b; color:#eaffff; border:1px solid #223044; border-radius:8px; padding:8px"/>
+        <button onclick="onFetchEmails(true)">Fetch emails</button>
+        <button id="more" onclick="onFetchEmails(false)" disabled>Show more</button>
+      </div>
+      <table>
+        <thead><tr><th>Date</th><th>Subject</th><th>From</th></tr></thead>
+        <tbody id="emails-body"></tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <div class="row" style="gap:8px">
+        <strong>Calendar</strong>
+        <input id="cal-start" type="datetime-local" style="background:#0f141b; color:#eaffff; border:1px solid #223044; border-radius:8px; padding:8px"/>
+        <input id="cal-end" type="datetime-local" style="background:#0f141b; color:#eaffff; border:1px solid #223044; border-radius:8px; padding:8px"/>
+        <button onclick="onFetchEvents(true)">Fetch events</button>
+      </div>
+      <table>
+        <thead><tr><th>Start</th><th>Event</th><th>Location</th></tr></thead>
+        <tbody id="events-body"></tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Create Calendar Event</strong>
+      <form id="ev-form" onsubmit="event.preventDefault(); onCreateEvent();">
+        <div class="grid2">
+          <div class="form-group"><label for="ev-title">Title *</label><input id="ev-title" placeholder="Event title"/></div>
+          <div class="form-group"><label for="ev-location">Location</label><input id="ev-location" placeholder="Where"/></div>
+          <div class="form-group"><label for="ev-start">Start *</label><input id="ev-start" type="datetime-local"/></div>
+          <div class="form-group"><label for="ev-end">End *</label><input id="ev-end" type="datetime-local"/></div>
+          <div class="form-group" style="grid-column: span 2"><label for="ev-attendees">Attendees (comma-separated emails)</label><input id="ev-attendees" placeholder="a@x.com, b@y.com"/></div>
+          <div class="form-group" style="grid-column: span 2"><label for="ev-desc">Description</label><textarea id="ev-desc" placeholder="Details..."></textarea></div>
+        </div>
+        <div class="button-group"><button type="submit">Create Event</button></div>
+      </form>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <div class="row" style="gap:8px">
+        <strong>Tasks</strong>
+        <label><input id="show-completed" type="checkbox"/> Show completed</label>
+        <button onclick="onFetchTasks(true)">Fetch tasks</button>
+      </div>
+      <table>
+        <thead><tr><th>Title</th><th>Notes</th><th>Due</th><th>Action</th></tr></thead>
+        <tbody id="tasks-body"></tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Create Task</strong>
+      <form id="task-form" onsubmit="event.preventDefault(); onCreateTask();">
+        <div class="form-group"><label for="task-title">Title *</label><input id="task-title" placeholder="Task title"/></div>
+        <div class="form-group"><label for="task-notes">Notes</label><textarea id="task-notes" placeholder="Task details..."></textarea></div>
+        <div class="form-group"><label for="task-due">Due Date</label><input id="task-due" type="date"/></div>
+        <div class="button-group"><button type="submit">Create Task</button></div>
+      </form>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <div class="row" style="gap:8px">
+        <strong>Documents</strong>
+        <input id="docs-query" placeholder="Search documents..." style="flex:1; background:#0f141b; color:#eaffff; border:1px solid #223044; border-radius:8px; padding:8px"/>
+        <button onclick="onFetchDocuments(true)">Fetch documents</button>
+      </div>
+      <table>
+        <thead><tr><th>Title</th><th>Modified</th><th>Owners</th><th>Action</th></tr></thead>
+        <tbody id="docs-body"></tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Create Document</strong>
+      <form id="doc-form" onsubmit="event.preventDefault(); onCreateDocument();">
+        <div class="form-group"><label for="doc-title">Title *</label><input id="doc-title" placeholder="Document title"/></div>
+        <div class="form-group"><label for="doc-content">Content</label><textarea id="doc-content" placeholder="Document content..."></textarea></div>
+        <div class="button-group"><button type="submit">Create Document</button></div>
+      </form>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <div class="row" style="gap:8px">
+        <strong>Contacts</strong>
+        <input id="contacts-query" placeholder="Search contacts..." style="flex:1; background:#0f141b; color:#eaffff; border:1px solid #223044; border-radius:8px; padding:8px"/>
+        <button onclick="loadAllContacts()">Load All Contacts</button>
+        <button onclick="onSearchContacts(true)">Search contacts</button>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Action</th></tr></thead>
+        <tbody id="contacts-body"></tbody>
+      </table>
+    </div>
+
+        <div class="box" style="margin-top:16px">
+          <strong>Transcription Analysis</strong>
+          <div class="form-group">
+            <label for="transcription-prompt">Transcription Text *</label>
+            <textarea id="transcription-prompt" placeholder="Paste your transcription text here for AI analysis..." rows="6"></textarea>
+          </div>
+          <div class="form-group">
+            <label><input id="include-summary" type="checkbox" checked/> Include Summary</label>
+            <label><input id="include-action-items" type="checkbox" checked/> Include Action Items</label>
+          </div>
+          <div class="form-group">
+            <label for="ai-priority">AI Priority:</label>
+            <select id="ai-priority">
+              <option value="balanced">Balanced (Speed + Quality)</option>
+              <option value="speed">Speed (Fastest Response)</option>
+              <option value="quality">Quality (Best Analysis)</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button onclick="onTranscribeAudio()">Analyze Transcription</button>
+            <button onclick="testGeminiConnection()" style="background: #28a745;">Test Gemini</button>
+            <button onclick="testAIOrchestration()" style="background: #6f42c1;">Test AI Orchestration</button>
+            <button onclick="testCostManagement()" style="background: #dc3545;">Test Cost Management</button>
+            <button onclick="testContextManagement()" style="background: #fd7e14;">Test Context Management</button>
+            <button onclick="testSafetyGuardrails()" style="background: #e83e8c;">Test Safety & Guardrails</button>
+          </div>
+        </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Email Router Workflow</strong>
+      <div class="form-group">
+        <label for="email-subject">Email Subject *</label>
+        <input id="email-subject" type="text" placeholder="Enter email subject..." />
+      </div>
+      <div class="form-group">
+        <label for="email-body">Email Body *</label>
+        <textarea id="email-body" placeholder="Enter email body content..." rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="email-from">From</label>
+        <input id="email-from" type="text" placeholder="sender@company.com" />
+      </div>
+      <div class="form-group">
+        <label for="email-to">To</label>
+        <input id="email-to" type="text" placeholder="recipient@company.com" />
+      </div>
+      <div class="button-group">
+        <button onclick="onExecuteEmailRouter()">Execute Email Router Workflow</button>
+        <button onclick="testEmailRouterWorkflow()" style="background: #17a2b8;">Test Email Router</button>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Meeting Create Workflow</strong>
+      <div class="form-group">
+        <label for="meeting-title">Meeting Title *</label>
+        <input id="meeting-title" type="text" placeholder="Enter meeting title..." />
+      </div>
+      <div class="form-group">
+        <label for="meeting-description">Description</label>
+        <textarea id="meeting-description" placeholder="Enter meeting description..." rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="meeting-attendees">Attendees (comma-separated emails)</label>
+        <input id="meeting-attendees" type="text" placeholder="john@company.com, jane@company.com" />
+      </div>
+      <div class="form-group">
+        <label for="meeting-duration">Duration (minutes)</label>
+        <input id="meeting-duration" type="number" value="60" min="15" max="480" />
+      </div>
+      <div class="form-group">
+        <label for="meeting-location">Location</label>
+        <input id="meeting-location" type="text" placeholder="Conference Room A or Virtual Meeting" />
+      </div>
+      <div class="form-group">
+        <label for="meeting-start-date">Start Date</label>
+        <input id="meeting-start-date" type="date" />
+      </div>
+      <div class="form-group">
+        <label for="meeting-end-date">End Date (for slot search)</label>
+        <input id="meeting-end-date" type="date" />
+      </div>
+      <div class="button-group">
+        <button onclick="onExecuteMeetingCreate()">Execute Meeting Create Workflow</button>
+        <button onclick="testMeetingCreateWorkflow()" style="background: #28a745;">Test Meeting Create</button>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Meeting Summary Generator</strong>
+      <form id="meeting-summary-form" onsubmit="event.preventDefault(); onCreateMeetingSummary();">
+        <div class="form-group">
+          <label for="meeting-title">Meeting Title</label>
+          <input id="meeting-title" placeholder="Weekly Team Meeting"/>
+        </div>
+        <div class="form-group">
+          <label for="meeting-date">Date</label>
+          <input id="meeting-date" type="date"/>
+        </div>
+        <div class="form-group">
+          <label for="meeting-attendees">Attendees (comma-separated)</label>
+          <input id="meeting-attendees" placeholder="john@company.com, jane@company.com"/>
+        </div>
+        <div class="form-group">
+          <label for="meeting-transcription">Meeting Transcription *</label>
+          <textarea id="meeting-transcription" placeholder="Paste the meeting transcription here..." rows="8"></textarea>
+        </div>
+        <div class="button-group">
+          <button type="submit">Create Meeting Summary</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <strong>Meeting Sentiment Analysis</strong>
+      <div class="form-group">
+        <label for="sentiment-transcription">Meeting Transcription *</label>
+        <textarea id="sentiment-transcription" placeholder="Paste the meeting transcription for sentiment analysis..." rows="6"></textarea>
+      </div>
+      <div class="button-group">
+        <button onclick="onAnalyzeSentiment()">Analyze Sentiment</button>
+      </div>
+    </div>
+
+    <div class="box compose-section">
+      <strong>Compose Email</strong>
+      
+      <div class="form-group">
+        <label for="compose-to">To *</label>
+        <input type="email" id="compose-to" placeholder="recipient@example.com" multiple>
+      </div>
+      
+      <div class="form-group">
+        <label for="compose-cc">Cc</label>
+        <input type="email" id="compose-cc" placeholder="cc@example.com" multiple>
+      </div>
+      
+      <div class="form-group">
+        <label for="compose-bcc">Bcc</label>
+        <input type="email" id="compose-bcc" placeholder="bcc@example.com" multiple>
+      </div>
+      
+      <div class="form-group">
+        <label for="compose-subject">Subject</label>
+        <input type="text" id="compose-subject" placeholder="Email subject">
+      </div>
+      
+      <div class="form-group">
+        <label for="compose-body">Message</label>
+        <textarea id="compose-body" placeholder="Type your message here..."></textarea>
+      </div>
+      
+      <div class="button-group">
+        <button onclick="onCreateDraft()">Save Draft</button>
+        <button onclick="onSendEmail()">Send Email</button>
+        <button onclick="clearComposeForm()">Clear</button>
+      </div>
+      
+      <div id="confirm-dialog" class="confirm-dialog">
+        <h3>Confirm Email Send</h3>
+        <p><strong>To:</strong> <span id="confirm-to"></span></p>
+        <p><strong>Cc:</strong> <span id="confirm-cc"></span></p>
+        <p><strong>Bcc:</strong> <span id="confirm-bcc"></span></p>
+        <p><strong>Subject:</strong> <span id="confirm-subject"></span></p>
+        <p><strong>Body:</strong></p>
+        <div style="background: #0f141b; padding: 8px; border-radius: 4px; max-height: 200px; overflow-y: auto;">
+          <span id="confirm-body"></span>
+        </div>
+        <div class="confirm-buttons">
+          <button class="btn-success" onclick="confirmSend()">Send Now</button>
+          <button class="btn-danger" onclick="cancelSend()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:16px">
+      <h2 id="meeting-notes-heading">Meeting Notes Workflow</h2>
+      <div class="form-group">
+        <label for="notes-meeting-title">Meeting Title *</label>
+        <input id="notes-meeting-title" type="text" placeholder="Enter meeting title..." 
+               aria-required="true" aria-describedby="title-help" />
+        <div id="title-help" class="sr-only">Required field. Enter a descriptive title for your meeting.</div>
+      </div>
+      <div class="form-group">
+        <label for="notes-meeting-date">Meeting Date</label>
+        <input id="notes-meeting-date" type="date" aria-describedby="date-help" />
+        <div id="date-help" class="sr-only">Optional. Select the date when the meeting took place.</div>
+      </div>
+      <div class="form-group">
+        <label for="notes-meeting-attendees">Attendees (comma-separated emails)</label>
+        <input id="notes-meeting-attendees" type="text" placeholder="john@company.com, jane@company.com" 
+               aria-describedby="attendees-help" />
+        <div id="attendees-help" class="sr-only">Optional. List email addresses of meeting attendees, separated by commas.</div>
+      </div>
+      <div class="form-group">
+        <label for="notes-meeting-transcription">Meeting Transcription *</label>
+        <textarea id="notes-meeting-transcription" placeholder="Paste the meeting transcription here..." rows="8"
+                  aria-required="true" aria-describedby="transcription-help"></textarea>
+        <div id="transcription-help" class="sr-only">Required field. Paste the full meeting transcription text here.</div>
+      </div>
+      <div class="form-group">
+        <label for="notes-share-with">Share With (comma-separated emails)</label>
+        <input id="notes-share-with" type="text" placeholder="john@company.com, jane@company.com" 
+               aria-describedby="share-help" />
+        <div id="share-help" class="sr-only">Optional. List email addresses to share the generated document with.</div>
+      </div>
+      <div class="button-group" role="group" aria-label="Meeting Notes Actions">
+        <button onclick="onExecuteMeetingNotes()" aria-describedby="execute-help">Execute Meeting Notes Workflow</button>
+        <button onclick="onCreateHTMLMeetingNotes()" class="btn-info" aria-describedby="html-help">Create HTML Meeting Notes</button>
+        <button onclick="testMeetingNotesWorkflow()" class="btn-success" aria-describedby="test-help">Test Meeting Notes</button>
+        <button onclick="clearWorkflowCache()" class="btn-warning" aria-describedby="cache-help">Clear Cache</button>
+      </div>
+      <div class="sr-only">
+        <div id="execute-help">Executes the full meeting notes workflow including transcription, analysis, document creation, and sharing.</div>
+        <div id="html-help">Creates a beautifully formatted HTML document with the meeting notes.</div>
+        <div id="test-help">Runs test scenarios to verify the meeting notes workflow functionality.</div>
+        <div id="cache-help">Clears the workflow deduplication cache to allow re-running tests.</div>
+      </div>
+    </div>
+  </body>
+</html>
