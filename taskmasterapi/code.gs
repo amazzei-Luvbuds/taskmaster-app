@@ -3307,6 +3307,12 @@ function handleApiRequest(e) {
       case 'health':
         response = handleHealthEndpoint(e, {});
         break;
+      case 'sales-metrics':
+        response = {
+          success: true,
+          data: getSalesCallMetrics(e.parameter.startIso, e.parameter.endIso)
+        };
+        break;
       default:
         response = createErrorResponse('Endpoint not found', 404);
     }
