@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Minimal Test</title>
+</head>
+<body style="background: #0a0a14; color: #e0e0e0; font-family: Arial; padding: 2rem; text-align: center;">
+    <h1 style="color: #60a5fa;">🎯 Project Dashboard</h1>
+    <p>This is a minimal test page to verify basic functionality.</p>
+    
+    <div style="margin: 2rem 0;">
+        <a href="?page=dashboard" style="background: #60a5fa; color: #0a0a14; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; margin: 1rem;">Dashboard</a>
+        <a href="?page=kanban" style="background: #60a5fa; color: #0a0a14; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; margin: 1rem;">Kanban</a>
+        <a href="?page=uploader" style="background: #60a5fa; color: #0a0a14; padding: 1rem 2rem; text-decoration: none; border-radius: 8px; margin: 1rem;">Uploader</a>
+    </div>
+    
+    <div id="test-data">Loading...</div>
+    
+    <script>
+        // Minimal test to see if Google Apps Script functions work
+        try {
+            document.getElementById('test-data').innerHTML = 'JavaScript is working. Testing server connection...';
+            
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        document.getElementById('test-data').innerHTML = 
+                            '<h3 style="color: #10b981;">✅ Connection Success!</h3>' +
+                            '<p>Found ' + (data.tasks ? data.tasks.length : 0) + ' tasks</p>' +
+                            '<p>Found ' + (data.departments ? data.departments.length : 0) + ' departments</p>';
+                    })
+                    .withFailureHandler(function(error) {
+                        document.getElementById('test-data').innerHTML = 
+                            '<h3 style="color: #ef4444;">❌ Connection Failed</h3>' +
+                            '<p>' + error.message + '</p>';
+                    })
+                    .getKanbanData();
+            } else {
+                document.getElementById('test-data').innerHTML = 
+                    '<h3 style="color: #fbbf24;">⚠️ Google Apps Script Not Available</h3>' +
+                    '<p>This page needs to be run in Google Apps Script environment</p>';
+            }
+        } catch (e) {
+            document.getElementById('test-data').innerHTML = 
+                '<h3 style="color: #ef4444;">❌ JavaScript Error</h3>' +
+                '<p>' + e.message + '</p>';
+        }
+    </script>
+</body>
+</html>

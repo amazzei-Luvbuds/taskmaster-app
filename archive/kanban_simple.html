@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Kanban Board</title>
+    <style>
+        body { 
+            background: #0a0a14; 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            padding: 20px; 
+            background: rgba(20, 20, 40, 0.7); 
+            border-radius: 8px; 
+        }
+        .nav { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+        .nav a { 
+            color: #60a5fa; 
+            text-decoration: none; 
+            margin: 0 10px; 
+            padding: 8px 16px; 
+            border: 1px solid #60a5fa; 
+            border-radius: 4px; 
+        }
+        .nav a:hover { 
+            background: #60a5fa; 
+            color: #0a0a14; 
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏠 Simple Kanban Board</h1>
+        <p>This is a simplified version for testing.</p>
+    </div>
+    
+    <div class="nav">
+        <a href="?page=dashboard">🏠 Dashboard</a>
+        <a href="?page=kanban">📋 Full Kanban</a>
+        <a href="?page=uploader">🤖 AI Uploader</a>
+        <a href="?page=admin&key=<?= adminKey ?>">⚙️ Admin</a>
+    </div>
+    
+    <div id="content">
+        <p>Loading kanban data...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Try getKanbanData first, fallback to getTasks if it fails
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    if (data && data.tasks) {
+                        // getKanbanData worked
+                        const content = document.getElementById('content');
+                        content.innerHTML = `
+                            <h3>Tasks Summary</h3>
+                            <p>Total Tasks: ${data.tasks.length}</p>
+                            <p>Departments: ${data.departments.join(', ')}</p>
+                            <p>Users: ${data.users.length}</p>
+                            <p><a href="?page=kanban">View Full Kanban Board</a></p>
+                        `;
+                    } else {
+                        // getKanbanData failed, try getTasks as fallback
+                        console.log('getKanbanData failed, trying getTasks fallback');
+                        google.script.run
+                            .withSuccessHandler(function(tasks) {
+                                const content = document.getElementById('content');
+                                content.innerHTML = `
+                                    <h3>Tasks Summary (Fallback)</h3>
+                                    <p>Total Tasks: ${tasks.length}</p>
+                                    <p><a href="?page=kanban">View Full Kanban Board</a></p>
+                                `;
+                            })
+                            .withFailureHandler(function(error) {
+                                document.getElementById('content').innerHTML = 
+                                    '<p style="color: #dc3545;">Failed to load: ' + error.message + '</p>';
+                            })
+                            .getTasks();
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.log('getKanbanData failed with error:', error);
+                    // Try getTasks as fallback
+                    google.script.run
+                        .withSuccessHandler(function(tasks) {
+                            const content = document.getElementById('content');
+                            content.innerHTML = `
+                                <h3>Tasks Summary (Fallback)</h3>
+                                <p>Total Tasks: ${tasks.length}</p>
+                                <p><a href="?page=kanban">View Full Kanban Board</a></p>
+                            `;
+                        })
+                        .withFailureHandler(function(error) {
+                            document.getElementById('content').innerHTML = 
+                                '<p style="color: #dc3545;">Failed to load: ' + error.message + '</p>';
+                        })
+                        .getTasks();
+                })
+                .getKanbanData();
+        });
+    </script>
+</body>
+</html>

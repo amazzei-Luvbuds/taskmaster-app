@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { 
+            background: #0a0a14; 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        
+        .template-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .template-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .template-card {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .template-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+        
+        .template-description {
+            color: #9ca3af;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .template-preview {
+            background: #0f172a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        
+        .download-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            background: #059669;
+        }
+        
+        .instructions {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="template-container">
+        <button class="back-btn" onclick="window.history.back()">← Back to Task Manager</button>
+        
+        <div class="template-header">
+            <h1>CSV Templates for Department Data Import</h1>
+            <p>Download the appropriate template for your department to ensure proper data formatting</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Use These Templates</h3>
+            <ol>
+                <li>Download the template that matches your department</li>
+                <li>Fill in your data following the column headers</li>
+                <li>Save as CSV format (.csv)</li>
+                <li>Upload to the Task Manager using the CSV Import feature</li>
+                <li>Your data will be automatically converted to tasks and KPIs</li>
+            </ol>
+        </div>
+        
+        <div class="template-grid">
+            <!-- Accounting Template -->
+            <div class="template-card">
+                <div class="template-title">Accounting Template</div>
+                <div class="template-description">
+                    For financial metrics, revenue tracking, and accounting KPIs
+                </div>
+                <div class="template-preview">
+WEEK OF,9/20/2024,9/27/2024,10/4/2024
+TOTAL REVENUE YTD,23284508,24773748,21227000
+TOTAL REVENUE MTD,1489240,2242351,102236
+TOTAL REVENUE QTD,4716749,7004859,102236
+% Change YTD,4%,7%,4%
+% Change MTD,2%,24%,-94%
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('accounting')">Download Accounting Template</button>
+            </div>
+            
+            <!-- Sales Template -->
+            <div class="template-card">
+                <div class="template-title">Sales Template</div>
+                <div class="template-description">
+                    For sales rep performance, calls, orders, and revenue tracking
+                </div>
+                <div class="template-preview">
+SALE REP,Company,Diana,Ish,Ruben,Aaron
+Calls Made,84,103,135,125,91
+Emails Made,73,168,170,67,85
+New Accounts Opened,20,0,1,9,2
+Order Count,17,28,55,9,43
+Largest Orders,$118000,$8934,$11288,$4601,$9792
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('sales')">Download Sales Template</button>
+            </div>
+            
+            <!-- Tech Template -->
+            <div class="template-card">
+                <div class="template-title">Tech Template</div>
+                <div class="template-description">
+                    For IT tickets, projects, and system maintenance tasks
+                </div>
+                <div class="template-preview">
+WEEK OF,9/20/2024,9/27/2024,10/4/2024
+New Tickets Opened,25,55,32
+Total Tickets Closed,27,49,28
+Project,Strabo Connector,Hubspot Cleanup,Automatic Invoicing
+Status,In Progress,On Hold,Testing
+Assignee,Danny,Mike Metz,Zach
+Due Date,9/15/2025,6/29/2025,4/21/2025
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('tech')">Download Tech Template</button>
+            </div>
+            
+            <!-- Marketing Template -->
+            <div class="template-card">
+                <div class="template-title">Marketing Template</div>
+                <div class="template-description">
+                    For marketing campaigns, traffic, and engagement metrics
+                </div>
+                <div class="template-preview">
+WEEK OF,20-Sep,27-Sep,4-Oct
+TOTAL BUSINESS WON,$9012,$45087.96,$1527.00
+GROWTH OF ORGANIC TRAFFIC,10%,19%,54%
+TOTAL TRUE TRAFFIC,6450,6413,8213
+TOTAL SALES SHIPPED,$587461.56,$530477.80,$639376.86
+ORGANIC BUSINESS DUE TO SEO,$272736.71,$343324.25,$381028.51
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('marketing')">Download Marketing Template</button>
+            </div>
+            
+            <!-- HR Template -->
+            <div class="template-card">
+                <div class="template-title">HR Template</div>
+                <div class="template-description">
+                    For employee metrics, attendance, and HR KPIs
+                </div>
+                <div class="template-preview">
+WEEK OF,9/20/2024,9/27/2024,10/4/2024
+Late Days %,91%,93.50%,94.90%
+Missing Days %,86.66%,95%,98.5%
+Write ups,0,0,0
+Complaints,0,0,0
+TOT # OF EMPLOYEES,53,57,57
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('hr')">Download HR Template</button>
+            </div>
+            
+            <!-- Customer Retention Template -->
+            <div class="template-card">
+                <div class="template-title">Customer Retention Template</div>
+                <div class="template-description">
+                    For support tickets, RMA tracking, and customer service metrics
+                </div>
+                <div class="template-preview">
+WEEK OF,3/14/2025,3/21/2025,3/28/2025
+Total Calls,34,24,15
+Total Chats,26,10,16
+Total Emails,138,124,115
+Replacement Orders,4,6,6
+Pending RMAs,9,8,5
+Completed RMAs,8,0,5
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('customer-retention')">Download Customer Retention Template</button>
+            </div>
+            
+            <!-- Swag Template -->
+            <div class="template-card">
+                <div class="template-title">Swag Template</div>
+                <div class="template-description">
+                    For product mapping, inventory, and merchandise tracking
+                </div>
+                <div class="template-preview">
+Project,SWAG Product Mapping,SWAG Process O2C,Inventory Management
+Status,Completed,In Progress,Not Started
+Assignee,Danny,Danny,Warehouse Team
+Due Date,6/29/2025,8/19/2025,12/31/2025
+Description,Product mapping completed,Process optimization,Inventory tracking system
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('swag')">Download Swag Template</button>
+            </div>
+            
+            <!-- Ideas Template -->
+            <div class="template-card">
+                <div class="template-title">Ideas Template</div>
+                <div class="template-description">
+                    For strategic planning, growth projections, and business ideas
+                </div>
+                <div class="template-preview">
+Metric,CURRENT,IDEAL FOR 2025,IDEAL FOR 2026
+AVG MONTHLY REV,$2320000.00,$3000000.00,$3600000.00
+AVG MONTHLY GM,39%,38%,34%
+AVG MONTHLY COGS,$1425222.40,$1875000.00,$2376000.00
+AVG MONTHLY GP,$894777.60,$1125000.00,$1224000.00
+ANNUAL PROFIT,$3033331.20,$4800000.00,$5328000.00
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('ideas')">Download Ideas Template</button>
+            </div>
+            
+            <!-- Trade Shows Template -->
+            <div class="template-card">
+                <div class="template-title">Trade Shows Template</div>
+                <div class="template-description">
+                    For event tracking, lead generation, and merchandising
+                </div>
+                <div class="template-preview">
+Event,Event Name,Date,Location,Attendance,Leads Generated,ROI
+Trade Show 1,Industry Expo 2025,3/15/2025,Convention Center,500,25,150%
+Trade Show 2,Product Launch,4/20/2025,Hotel Ballroom,200,15,200%
+Merchandise,Product Line,Launch Date,Target Market,Units Sold,Revenue
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('trade-shows')">Download Trade Shows Template</button>
+            </div>
+            
+            <!-- Purchasing Template -->
+            <div class="template-card">
+                <div class="template-title">Purchasing Template</div>
+                <div class="template-description">
+                    For procurement metrics, vendor performance, and cost tracking
+                </div>
+                <div class="template-preview">
+WEEK OF,9/20/2024,9/27/2024,10/4/2024
+Purchase Orders,15,22,18
+Vendor Performance,95%,92%,98%
+Cost Savings,$5000,$7500,$3200
+Average Lead Time,5 days,4 days,6 days
+Quality Score,4.2,4.5,4.1
+                </div>
+                <button class="download-btn" onclick="downloadTemplate('purchasing')">Download Purchasing Template</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const templates = {
+            'accounting': {
+                headers: ['WEEK OF', '9/20/2024', '9/27/2024', '10/4/2024'],
+                data: [
+                    ['TOTAL REVENUE YTD', '23284508', '24773748', '21227000'],
+                    ['TOTAL REVENUE MTD', '1489240', '2242351', '102236'],
+                    ['TOTAL REVENUE QTD', '4716749', '7004859', '102236'],
+                    ['% Change YTD', '4%', '7%', '4%'],
+                    ['% Change MTD', '2%', '24%', '-94%']
+                ]
+            },
+            'sales': {
+                headers: ['SALE REP', 'Company', 'Diana', 'Ish', 'Ruben', 'Aaron'],
+                data: [
+                    ['Calls Made', '84', '103', '135', '125', '91'],
+                    ['Emails Made', '73', '168', '170', '67', '85'],
+                    ['New Accounts Opened', '20', '0', '1', '9', '2'],
+                    ['Order Count', '17', '28', '55', '9', '43'],
+                    ['Largest Orders', '$118000', '$8934', '$11288', '$4601', '$9792']
+                ]
+            },
+            'tech': {
+                headers: ['WEEK OF', '9/20/2024', '9/27/2024', '10/4/2024'],
+                data: [
+                    ['New Tickets Opened', '25', '55', '32'],
+                    ['Total Tickets Closed', '27', '49', '28'],
+                    ['Project', 'Strabo Connector', 'Hubspot Cleanup', 'Automatic Invoicing'],
+                    ['Status', 'In Progress', 'On Hold', 'Testing'],
+                    ['Assignee', 'Danny', 'Mike Metz', 'Zach'],
+                    ['Due Date', '9/15/2025', '6/29/2025', '4/21/2025']
+                ]
+            },
+            'marketing': {
+                headers: ['WEEK OF', '20-Sep', '27-Sep', '4-Oct'],
+                data: [
+                    ['TOTAL BUSINESS WON', '$9012', '$45087.96', '$1527.00'],
+                    ['GROWTH OF ORGANIC TRAFFIC', '10%', '19%', '54%'],
+                    ['TOTAL TRUE TRAFFIC', '6450', '6413', '8213'],
+                    ['TOTAL SALES SHIPPED', '$587461.56', '$530477.80', '$639376.86'],
+                    ['ORGANIC BUSINESS DUE TO SEO', '$272736.71', '$343324.25', '$381028.51']
+                ]
+            },
+            'hr': {
+                headers: ['WEEK OF', '9/20/2024', '9/27/2024', '10/4/2024'],
+                data: [
+                    ['Late Days %', '91%', '93.50%', '94.90%'],
+                    ['Missing Days %', '86.66%', '95%', '98.5%'],
+                    ['Write ups', '0', '0', '0'],
+                    ['Complaints', '0', '0', '0'],
+                    ['TOT # OF EMPLOYEES', '53', '57', '57']
+                ]
+            },
+            'customer-retention': {
+                headers: ['WEEK OF', '3/14/2025', '3/21/2025', '3/28/2025'],
+                data: [
+                    ['Total Calls', '34', '24', '15'],
+                    ['Total Chats', '26', '10', '16'],
+                    ['Total Emails', '138', '124', '115'],
+                    ['Replacement Orders', '4', '6', '6'],
+                    ['Pending RMAs', '9', '8', '5'],
+                    ['Completed RMAs', '8', '0', '5']
+                ]
+            },
+            'swag': {
+                headers: ['Project', 'SWAG Product Mapping', 'SWAG Process O2C', 'Inventory Management'],
+                data: [
+                    ['Status', 'Completed', 'In Progress', 'Not Started'],
+                    ['Assignee', 'Danny', 'Danny', 'Warehouse Team'],
+                    ['Due Date', '6/29/2025', '8/19/2025', '12/31/2025'],
+                    ['Description', 'Product mapping completed', 'Process optimization', 'Inventory tracking system']
+                ]
+            },
+            'ideas': {
+                headers: ['Metric', 'CURRENT', 'IDEAL FOR 2025', 'IDEAL FOR 2026'],
+                data: [
+                    ['AVG MONTHLY REV', '$2320000.00', '$3000000.00', '$3600000.00'],
+                    ['AVG MONTHLY GM', '39%', '38%', '34%'],
+                    ['AVG MONTHLY COGS', '$1425222.40', '$1875000.00', '$2376000.00'],
+                    ['AVG MONTHLY GP', '$894777.60', '$1125000.00', '$1224000.00'],
+                    ['ANNUAL PROFIT', '$3033331.20', '$4800000.00', '$5328000.00']
+                ]
+            },
+            'trade-shows': {
+                headers: ['Event', 'Event Name', 'Date', 'Location', 'Attendance', 'Leads Generated', 'ROI'],
+                data: [
+                    ['Trade Show 1', 'Industry Expo 2025', '3/15/2025', 'Convention Center', '500', '25', '150%'],
+                    ['Trade Show 2', 'Product Launch', '4/20/2025', 'Hotel Ballroom', '200', '15', '200%'],
+                    ['Merchandise', 'Product Line', 'Launch Date', 'Target Market', 'Units Sold', 'Revenue', '']
+                ]
+            },
+            'purchasing': {
+                headers: ['WEEK OF', '9/20/2024', '9/27/2024', '10/4/2024'],
+                data: [
+                    ['Purchase Orders', '15', '22', '18'],
+                    ['Vendor Performance', '95%', '92%', '98%'],
+                    ['Cost Savings', '$5000', '$7500', '$3200'],
+                    ['Average Lead Time', '5 days', '4 days', '6 days'],
+                    ['Quality Score', '4.2', '4.5', '4.1']
+                ]
+            }
+        };
+
+        function downloadTemplate(department) {
+            const template = templates[department];
+            if (!template) {
+                alert('Template not found for department: ' + department);
+                return;
+            }
+
+            // Convert to CSV format
+            let csvContent = template.headers.join(',') + '\n';
+            template.data.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${department}_template.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

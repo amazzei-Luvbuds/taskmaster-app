@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('style.css.html'); ?>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <style>
+    .swag-header { display:flex; align-items:center; justify-content:space-between; padding:12px 0; margin-bottom:12px; }
+    .swag-title { font-size: 1.6rem; font-weight: bold; color:#ffd700; }
+    .swag-controls { display:flex; gap:10px; align-items:center; }
+    .filters select, .filters input { background:#0f172a; color:#e5e7eb; border:1px solid #374151; padding:6px 8px; border-radius:6px; }
+    .kanban-wrapper { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:8px; }
+    .column-head { display:flex; align-items:center; justify-content:space-between; padding:6px 8px; background:rgba(255,215,0,0.08); border-bottom:1px solid #374151; color:#ffd700; font-weight:bold; }
+    .count-pill { background:#ffd700; color:#0a0a14; font-weight:bold; border-radius:12px; padding:0 8px; font-size:12px; }
+    /* Loader overlay */
+    .loader-overlay { position: fixed; inset: 0; background: rgba(10,10,20,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; color:#ffd700; gap: 12px; font-size: 1rem; }
+    .loader-spinner { width: 28px; height: 28px; border: 3px solid rgba(255,215,0,0.25); border-top-color: #ffd700; border-radius: 50%; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  </head>
+<body>
+  <div id="loader" class="loader-overlay"><div class="loader-spinner"></div><div>Populating Swag board…</div></div>
+  <div class="app-container">
+    <div class="swag-header">
+      <div class="swag-title">🧢 Swag Supply — Production Board</div>
+      <div class="swag-controls filters">
+        <input id="q" placeholder="Search projects..." />
+        <select id="ownerSel"><option value="All">All owners</option></select>
+        <span style="margin-left:12px"></span>
+        <input id="nt-title" placeholder="New swag task" />
+        <select id="nt-owner"><option value="">Owner (optional)</option></select>
+        <input id="nt-due" type="date" />
+        <select id="nt-stage"><option value="">Stage</option></select>
+        <button class="btn-small" onclick="createNewSwagTask()">Create</button>
+        <a href="<?= getWebAppUrl() ?>?page=dashboard" style="color:#60a5fa; margin-left:8px;">Back to Dashboard</a>
+      </div>
+    </div>
+    <div id="counts" style="display:flex; gap:16px; color:#9ca3af; margin-bottom:10px;"></div>
+
+    <div id="board" class="kanban-wrapper"></div>
+  </div>
+
+  <script>
+    const BASE_URL = "<?= getWebAppUrl() ?>";
+    let DATA = { stages: [], tasks: [], owners: [], team: [], avatarMap: {} };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try { document.getElementById('loader').style.display = 'flex'; } catch(_) {}
+      google.script.run
+        .withSuccessHandler(init)
+        .withFailureHandler(err => alert('Failed to load Swag Supply data: ' + err.message))
+        .getSwagSupplyData();
+    });
+
+    function init(res){
+      if (!res || res.error) { alert('Error: ' + (res && res.error ? res.error : 'Unknown')); return; }
+      DATA = res;
+      const ownerSel = document.getElementById('ownerSel');
+      (res.owners || []).forEach(o => { const op = document.createElement('option'); op.value=o; op.textContent=o; ownerSel.appendChild(op); });
+      // populate quick-create selects (prefer team full names if present)
+      const ntOwner = document.getElementById('nt-owner');
+      ntOwner.innerHTML = '<option value="">Owner (optional)</option>';
+      const ownerSource = (Array.isArray(res.team) && res.team.length) ? res.team.map(m=>m.fullName) : (res.owners || []);
+      ownerSource.forEach(o => { const op = document.createElement('option'); op.value=o; op.textContent=o; ntOwner.appendChild(op); });
+      const ntStage = document.getElementById('nt-stage');
+      ntStage.innerHTML = '<option value="">Stage</option>';
+      (res.stages || []).forEach(s => { const op = document.createElement('option'); op.value=s; op.textContent=s; ntStage.appendChild(op); });
+      ownerSel.onchange = render;
+      document.getElementById('q').oninput = debounce(render, 150);
+      render();
+      try { document.getElementById('loader').style.display = 'none'; } catch(_) {}
+    }
+
+    function normalizeStage(s){ return (s||'').toString(); }
+
+    function filteredTasks(){
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const owner = document.getElementById('ownerSel').value || 'All';
+      return (DATA.tasks || []).filter(t => {
+        const inOwner = owner === 'All' || String(t.owners||'').split(',').map(x=>x.trim()).includes(owner);
+        const inText = !q || (String(t.actionItem||'').toLowerCase().includes(q) || String(t.taskID||'').toLowerCase().includes(q));
+        return inOwner && inText;
+      });
+    }
+
+    function render(){
+      const board = document.getElementById('board');
+      board.innerHTML='';
+      const tasks = filteredTasks();
+      const stages = DATA.stages || [];
+      renderCounts(tasks);
+      stages.forEach(stage => {
+        const col = document.createElement('div');
+        col.className = 'kanban-column';
+        col.style.minWidth = '320px';
+        const list = tasks.filter(t => normalizeStage(t.productionStage) === stage);
+        col.innerHTML = `<div class="column-head">${stage} <span class="count-pill">${list.length}</span></div>
+                         <div class="card-container" data-stage="${stage}"></div>`;
+        const cont = col.querySelector('.card-container');
+        list.forEach(t => cont.appendChild(renderCard(t)));
+        board.appendChild(col);
+      });
+      initDnD();
+    }
+
+    function renderCard(t){
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.dataset.taskId = t.taskID;
+      // color code per customer/client if available
+      const key = (t.customer || t.Client || t.client || t.account || '').toString() || t.department || '';
+      if (key) card.style.borderLeft = `4px solid ${colorFromString(key)}`;
+      const owners = String(t.owners||'').split(',').map(x=>x.trim()).filter(Boolean).join(', ');
+      const due = t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '';
+      card.innerHTML = `
+        <div class="card-title">${escapeHtml(t.actionItem || 'Untitled')}</div>
+        <div class="card-footer">
+          <div class="card-id">${t.taskID || ''}</div>
+          ${due ? `<span class="card-due-date">🗓️ ${due}</span>` : ''}
+          <div class="card-owner"><span class="owner-avatars"></span><span style="margin-left:6px;color:#9ca3af;">${owners || 'Unassigned'}</span></div>
+          <div class="card-status"><span class="status-badge status-${String(t.status||'').toLowerCase().replace(/\s+/g,'-')}">${t.status || 'N/A'}</span></div>
+        </div>`;
+      // render avatars
+      try {
+        const av = card.querySelector('.owner-avatars');
+        const raw = String(t.owners||'');
+        const tokens = raw.split(',').map(s=>s.trim()).filter(Boolean);
+        const map = (DATA.avatarMap || {});
+        const team = Array.isArray(DATA.team) ? DATA.team : [];
+        const seen = new Set();
+        const isGroupWord = (s)=>/\b(team|dept|department|group|board)\b/i.test(s);
+        function findAvatarFor(name){
+          const lc = name.toLowerCase();
+          if (map[lc]) return { url: map[lc], label: name };
+          // Team-based fuzzy match
+          const first = lc.split(' ')[0];
+          let m = team.find(x => x.fullName && x.fullName.toLowerCase() === lc) ||
+                  team.find(x => x.fullName && x.fullName.toLowerCase().startsWith(lc)) ||
+                  team.find(x => x.fullName && x.fullName.toLowerCase().split(' ')[0] === first);
+          if (m) {
+            const key = (m.fullName || '').toLowerCase();
+            const url = map[key] || m.avatarUrl || map['unassigned'];
+            return { url, label: m.fullName };
+          }
+          // Avatar map fuzzy contains
+          const keyHit = Object.keys(map).find(k => k.includes(lc) || lc.includes(k));
+          if (keyHit) return { url: map[keyHit], label: name };
+          return { url: map['unassigned'] || 'https://i.imgur.com/Vues1gP.png', label: name };
+        }
+        tokens.filter(tk => !isGroupWord(tk)).slice(0,3).forEach(n => {
+          const { url, label } = findAvatarFor(n);
+          const dedupeKey = (url||'') + '|' + label.toLowerCase();
+          if (seen.has(dedupeKey)) return; seen.add(dedupeKey);
+          const img = document.createElement('img');
+          img.src = url || 'https://i.imgur.com/Vues1gP.png';
+          img.alt = label; img.title = label;
+          img.className = 'owner-avatar';
+          img.onerror = function(){ this.src='https://i.imgur.com/Vues1gP.png'; this.onerror=null; };
+          av.appendChild(img);
+        });
+      } catch (_) {}
+      card.onclick = () => window.open(`${BASE_URL}?page=task&id=${encodeURIComponent(t.taskID)}&safe=1`, '_blank');
+      return card;
+    }
+
+    function initDnD(){
+      document.querySelectorAll('.card-container').forEach(cont => {
+        new Sortable(cont, {
+          group: 'swag',
+          animation: 150,
+          onEnd: function(evt){
+            const id = evt.item && evt.item.dataset.taskId;
+            const stage = evt.to && evt.to.dataset && evt.to.dataset.stage;
+            if (!id || !stage) return;
+            google.script.run
+              .withSuccessHandler(function(resp){ if (!resp || resp.status !== 'Success') alert('Update failed: ' + (resp && resp.message)); })
+              .withFailureHandler(function(err){ alert('Update failed: ' + err.message); })
+              .updateSwagProductionStage(id, stage);
+          }
+        });
+      });
+    }
+
+    function debounce(fn, ms){ let t; return function(){ clearTimeout(t); t=setTimeout(()=>fn.apply(this, arguments), ms); }; }
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+    function renderCounts(tasks){
+      const t = tasks || [];
+      const by = (stage) => t.filter(x => (x.productionStage||'') === stage).length;
+      const pending = by('Waiting for deposit');
+      const shipping = by('Waiting for shipment');
+      const mockups = by('Mockup requests');
+      const approvals = by('Waiting for approval');
+      document.getElementById('counts').innerHTML = `
+        <span>Pending payments: <strong style="color:#ffd700">${pending}</strong></span>
+        <span>Out for ship: <strong style="color:#ffd700">${shipping}</strong></span>
+        <span>Mockups: <strong style="color:#ffd700">${mockups}</strong></span>
+        <span>Approvals: <strong style="color:#ffd700">${approvals}</strong></span>`;
+    }
+    function colorFromString(s){
+      let h = 0; for (let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))>>>0; }
+      const hue = h % 360; return `hsl(${hue}, 75%, 55%)`;
+    }
+  </script>
+  <script>
+    function createNewSwagTask(){
+      const title = (document.getElementById('nt-title').value || '').trim();
+      const owner = document.getElementById('nt-owner').value || '';
+      const due = document.getElementById('nt-due').value || '';
+      const stage = document.getElementById('nt-stage').value || '';
+      if (!title){ alert('Enter a task title'); return; }
+      const payload = { actionItem: title, owners: owner, dueDate: due, department: 'Swag Supply', status: 'Not Started', productionStage: stage };
+      try { document.getElementById('loader').style.display = 'flex'; } catch(_) {}
+      google.script.run
+        .withSuccessHandler(function(res){
+          try { document.getElementById('loader').style.display = 'none'; } catch(_) {}
+          if (!res || res.status!=='Success'){ alert('Create failed: ' + (res && res.message ? res.message : 'Unknown')); return; }
+          // Add to in-memory data and re-render without full page reload
+          const newTask = { taskID: res.taskID, actionItem: title, owners: owner, dueDate: due, department: 'Swag Supply', status: 'Not Started', productionStage: stage, dateCreated: new Date().toISOString() };
+          DATA.tasks = Array.isArray(DATA.tasks) ? [newTask].concat(DATA.tasks) : [newTask];
+          // Reset inputs
+          document.getElementById('nt-title').value = '';
+          document.getElementById('nt-owner').value = '';
+          document.getElementById('nt-due').value = '';
+          document.getElementById('nt-stage').value = '';
+          render();
+        })
+        .withFailureHandler(function(err){ try { document.getElementById('loader').style.display = 'none'; } catch(_) {} alert('Create failed: ' + err.message); })
+        .createSimpleTask(payload);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        /* Basic dark theme styles */
+        body { 
+            background: #0a0a14; 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+        }
+        a { 
+            color: #60a5fa; 
+            text-decoration: none; 
+            transition: color 0.3s ease; 
+        }
+        a:hover { 
+            color: #3b82f6; 
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: 1px solid #60a5fa; 
+            background: transparent; 
+            color: #60a5fa; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            transition: all 0.3s ease; 
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover, .btn.active { 
+            background: #60a5fa; 
+            color: #0a0a14; 
+        }
+        .loader { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(10, 10, 20, 0.9); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+            color: #60a5fa; 
+            font-size: 1.5rem; 
+        }
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(5px); 
+            z-index: 998; 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-content { 
+            background: #0a0a14; 
+            border: 1px solid #60a5fa; 
+            border-radius: 8px; 
+            padding: 2rem; 
+            width: 90%; 
+            max-width: 600px; 
+            box-shadow: 0 5px 25px rgba(96, 165, 250, 0.2); 
+            position: relative; 
+        }
+        .modal-close { 
+            position: absolute; 
+            top: 10px; 
+            right: 20px; 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: #e0e0e0; 
+            opacity: 0.7; 
+            transition: opacity 0.2s; 
+        }
+        .modal-close:hover { opacity: 1; }
+    </style>
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .nav-card {
+            background: rgba(18, 24, 38, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-card:hover {
+            background: rgba(24, 30, 48, 0.95);
+            border-color: #60a5fa;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.15);
+        }
+        .nav-card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .nav-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #e5e7eb;
+        }
+        .nav-card-description {
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        .nav-card-link {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .nav-card-link:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: scale(1.05);
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .welcome-subtitle {
+            color: #9ca3af;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .quick-action-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .quick-action-btn:hover {
+            background: linear-gradient(135deg, #047857, #065f46);
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .welcome-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader" style="display: none;">Loading Dashboard...</div>
+    
+    <div class="dashboard-container">
+        <div class="welcome-section">
+            <h1 class="welcome-title">Project Dashboard</h1>
+            <p class="welcome-subtitle">
+                Manage your projects efficiently with our comprehensive task management system. 
+                View kanban boards, track progress, and collaborate with your team.
+            </p>
+            
+            <div class="quick-actions">
+                <a href="?page=kanban" class="quick-action-btn">📋 View Kanban Board</a>
+                <a href="?page=uploader" class="quick-action-btn">🤖 Upload AI Transcript</a>
+                <a href="?page=admin&key=<?= adminKey ?>" class="quick-action-btn">⚙️ Admin Panel</a>
+            </div>
+        </div>
+
+        <div class="stats-row" id="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="total-tasks">-</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="in-progress-tasks">-</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completed-tasks">-</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="overdue-tasks">-</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+
+        <div class="nav-grid">
+            <div class="nav-card" onclick="window.location.href='?page=swag_supply'">
+                <span class="nav-card-icon">🧢</span>
+                <h2 class="nav-card-title">Swag Supply</h2>
+                <p class="nav-card-description">
+                    Production tracker for swag orders. Real-time stages: mockups,
+                    approvals, deposits, shipments, and more.
+                </p>
+                <a href="?page=swag_supply" class="nav-card-link">Open Swag Board</a>
+            </div>
+            <div class="nav-card" onclick="window.location.href='?page=kanban'">
+                <span class="nav-card-icon">📋</span>
+                <h2 class="nav-card-title">Kanban Board</h2>
+                <p class="nav-card-description">
+                    Visual task management with drag-and-drop functionality. 
+                    Organize tasks by status and track progress in real-time.
+                </p>
+                <a href="?page=kanban" class="nav-card-link">Open Kanban</a>
+            </div>
+
+            <div class="nav-card" onclick="window.location.href='?page=uploader'">
+                <span class="nav-card-icon">🤖</span>
+                <h2 class="nav-card-title">AI Transcript Uploader</h2>
+                <p class="nav-card-description">
+                    Upload meeting transcripts and let AI automatically extract 
+                    and create tasks from the conversation.
+                </p>
+                <a href="?page=uploader" class="nav-card-link">Upload Transcript</a>
+            </div>
+
+            <div class="nav-card" onclick="window.location.href='department_dashboard.html'">
+                <span class="nav-card-icon">📊</span>
+                <h2 class="nav-card-title">Department Dashboard</h2>
+                <p class="nav-card-description">
+                    Real-time KPI tracking and task management for all departments. 
+                    No more Excel spreadsheets needed!
+                </p>
+                <a href="department_dashboard.html" class="nav-card-link">Open Dashboard</a>
+            </div>
+
+            <div class="nav-card" onclick="window.location.href='department_task_creator.html'">
+                <span class="nav-card-icon">➕</span>
+                <h2 class="nav-card-title">Create Tasks</h2>
+                <p class="nav-card-description">
+                    Easy task creation interface for department heads. 
+                    Quick actions, KPI tracking, and custom tasks.
+                </p>
+                <a href="department_task_creator.html" class="nav-card-link">Create Tasks</a>
+            </div>
+
+            <div class="nav-card" onclick="window.location.href='?page=tasks_departments'">
+                <span class="nav-card-icon">🏢</span>
+                <h2 class="nav-card-title">Department View</h2>
+                <p class="nav-card-description">
+                    Browse tasks organized by department. 
+                    Filter and manage work across different teams.
+                </p>
+                <a href="?page=tasks_departments" class="nav-card-link">View Departments</a>
+            </div>
+
+            <div class="nav-card" onclick="window.location.href='?page=leadership'">
+                <span class="nav-card-icon">🔒</span>
+                <h2 class="nav-card-title">Leadership Portal</h2>
+                <p class="nav-card-description">
+                    Confidential leadership tasks and strategic planning. 
+                    Requires Gmail authentication for access.
+                </p>
+                <a href="?page=leadership" class="nav-card-link">Leadership Access</a>
+            </div>
+
+            <div class="nav-card" onclick="showAdminAccess()">
+                <span class="nav-card-icon">⚙️</span>
+                <h2 class="nav-card-title">Admin Tools</h2>
+                <p class="nav-card-description">
+                    System administration, diagnostics, cache management, 
+                    and advanced configuration options.
+                </p>
+                <a href="#" onclick="showAdminAccess(); return false;" class="nav-card-link">Admin Panel</a>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #374151;">
+            <p style="color: #6b7280; font-size: 0.9rem;">
+                Need help? Check the <a href="#" onclick="showHelp()" style="color: #60a5fa;">Quick Help Guide</a> 
+                or contact your system administrator.
+            </p>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="modal-close" onclick="hideHelp()">×</span>
+            <h2>Quick Help Guide</h2>
+            <div style="text-align: left; line-height: 1.6;">
+                <h3>🚀 Getting Started</h3>
+                <ul>
+                    <li><strong>Kanban Board:</strong> Drag tasks between columns to update status</li>
+                    <li><strong>Task Details:</strong> Click any task to view details and make changes</li>
+                    <li><strong>AI Uploader:</strong> Paste meeting transcripts to auto-create tasks</li>
+                </ul>
+                
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <ul>
+                    <li><strong>ESC:</strong> Close modals and cancel actions</li>
+                    <li><strong>Enter:</strong> Save changes in forms</li>
+                    <li><strong>Ctrl/Cmd + Click:</strong> Select multiple items</li>
+                </ul>
+                
+                <h3>💡 Pro Tips</h3>
+                <ul>
+                    <li>Use the department filter to focus on specific team work</li>
+                    <li>Set due dates to track deadlines and see overdue items</li>
+                    <li>Assign team members to tasks for better collaboration</li>
+                    <li>Use subtasks to break down complex projects</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dashboardData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardStats();
+        });
+
+        function loadDashboardStats() {
+            document.getElementById('loader').style.display = 'flex';
+            google.script.run
+                .withSuccessHandler(updateDashboardStats)
+                .withFailureHandler(handleStatsError)
+                .getDashboardStats();
+        }
+
+        function updateDashboardStats(data) {
+            document.getElementById('loader').style.display = 'none';
+            dashboardData = data;
+            
+            document.getElementById('total-tasks').textContent = data.totalTasks || 0;
+            document.getElementById('in-progress-tasks').textContent = data.inProgressTasks || 0;
+            document.getElementById('completed-tasks').textContent = data.completedTasks || 0;
+            document.getElementById('overdue-tasks').textContent = data.overdueTasks || 0;
+        }
+
+        function handleStatsError(error) {
+            document.getElementById('loader').style.display = 'none';
+            console.error('Failed to load dashboard stats:', error);
+            // Still show the navigation even if stats fail
+        }
+
+        function showAdminAccess() {
+            const adminKey = '<?= adminKey ?>';
+            if (adminKey) {
+                window.location.href = `?page=admin&key=${adminKey}`;
+            } else {
+                alert('Admin access requires authentication. Please contact your system administrator.');
+            }
+        }
+
+        function showHelp() {
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function hideHelp() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideHelp();
+            }
+        });
+
+        // Click outside modal to close
+        document.getElementById('help-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'help-modal') {
+                hideHelp();
+            }
+        });
+    </script>
+</body>
+</html>

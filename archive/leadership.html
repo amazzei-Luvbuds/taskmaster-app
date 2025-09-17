@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        /* Leadership-specific dark theme */
+        body { 
+            background: linear-gradient(135deg, #0a0a14, #1a1a2e); 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+        }
+        
+        .leadership-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .leadership-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .leadership-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .leadership-subtitle {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-section {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .auth-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #e5e7eb;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.2);
+        }
+        
+        .auth-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #0a0a14;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .auth-btn:hover {
+            background: linear-gradient(135deg, #ffed4e, #ffd700);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+        
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+        
+        .leadership-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .nav-card {
+            background: rgba(18, 24, 38, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-card:hover {
+            background: rgba(24, 30, 48, 0.95);
+            border-color: #ffd700;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.15);
+        }
+        
+        .nav-card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .nav-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #e5e7eb;
+        }
+        
+        .nav-card-description {
+            color: #9ca3af;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-card-link {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #0a0a14;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-card-link:hover {
+            background: linear-gradient(135deg, #ffed4e, #ffd700);
+            transform: scale(1.05);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 20, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: #ffd700;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader" style="display: none;">Authenticating...</div>
+    
+    <div class="leadership-container">
+        <div class="leadership-header">
+            <h1 class="leadership-title">🔒 Leadership Portal</h1>
+            <p class="leadership-subtitle">Confidential Task Management & Strategic Planning</p>
+        </div>
+        
+        <!-- Authentication Section -->
+        <div id="auth-section" class="auth-section">
+            <h2>Leadership Authentication Required</h2>
+            <p style="color: #9ca3af; margin-bottom: 1rem;">
+                Sign in with your Google account to access leadership resources. Only approved emails will be granted access.
+            </p>
+            <div class="auth-form">
+                <div id="status-message" class="status-message hidden"></div>
+                <button id="check-access-btn" class="auth-btn" onclick="checkDomainAuth()">Check Access</button>
+                <div style="margin-top:10px; color:#9ca3af; font-size:0.9rem;">
+                    This portal is restricted to LuvBuds Workspace accounts. If you need to switch accounts,
+                    <a href="#" onclick="switchAccount(); return false;" style="color:#60a5fa;">click here</a>.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leadership Navigation (Hidden until authenticated) -->
+        <div id="leadership-nav" class="leadership-nav hidden">
+            <div id="auth-info" style="grid-column: 1 / -1; display:flex; justify-content: space-between; align-items:center; background: rgba(24, 30, 48, 0.95); border:1px solid #374151; padding:10px 14px; border-radius: 8px;">
+                <div style="color:#9ca3af;">
+                    <span>Signed in as:</span>
+                    <strong id="signed-in-email" style="color:#e5e7eb;"></strong>
+                </div>
+                <button onclick="logout()" class="auth-btn" style="padding:6px 12px; font-size:0.9rem;">Logout</button>
+            </div>
+            <div class="nav-card" onclick="window.location.href=BASE_URL + '?page=leadership_kanban'">
+                <span class="nav-card-icon">📋</span>
+                <h2 class="nav-card-title">Leadership Kanban</h2>
+                <p class="nav-card-description">
+                    View and manage confidential leadership tasks with full access to all project details.
+                </p>
+                <a href="<?= getWebAppUrl() ?>?page=leadership_kanban" class="nav-card-link">Open Leadership Board</a>
+            </div>
+            
+            <div class="nav-card" onclick="window.location.href=BASE_URL + '?page=leadership_dashboard'">
+                <span class="nav-card-icon">📊</span>
+                <h2 class="nav-card-title">Leadership Dashboard</h2>
+                <p class="nav-card-description">
+                    Strategic overview of all projects, including confidential leadership initiatives.
+                </p>
+                <a href="<?= getWebAppUrl() ?>?page=leadership_dashboard" class="nav-card-link">View Dashboard</a>
+            </div>
+            
+            <div class="nav-card" onclick="window.location.href=BASE_URL + '?page=leadership_reports'">
+                <span class="nav-card-icon">📈</span>
+                <h2 class="nav-card-title">Leadership Reports</h2>
+                <p class="nav-card-description">
+                    Generate confidential reports and analytics for executive decision making.
+                </p>
+                <a href="<?= getWebAppUrl() ?>?page=leadership_reports" class="nav-card-link">View Reports</a>
+            </div>
+            
+            <div class="nav-card" onclick="window.location.href=BASE_URL + '?page=leadership_admin'">
+                <span class="nav-card-icon">⚙️</span>
+                <h2 class="nav-card-title">Leadership Admin</h2>
+                <p class="nav-card-description">
+                    Manage leadership access, view audit logs, and configure confidential settings.
+                </p>
+                <a href="<?= getWebAppUrl() ?>?page=leadership_admin" class="nav-card-link">Admin Panel</a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #374151;">
+            <p style="color: #6b7280; font-size: 0.9rem;">
+                <a href="<?= getWebAppUrl() ?>?page=dashboard" style="color: #60a5fa;">← Back to Main Dashboard</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = "<?= getWebAppUrl() ?>";
+        let currentUser = null;
+        let isAuthenticated = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('Leadership portal: DOM loaded, initializing...');
+                
+                // Check if user is already authenticated
+                checkExistingAuth();
+                // Render Google Sign-In button (programmatic fallback if auto-render not used)
+                // Domain-based auth — no GIS required
+                checkDomainAuth();
+                
+                console.log('Leadership portal: Initialization complete');
+            } catch (error) {
+                console.error('Leadership portal: Error during initialization:', error);
+                document.body.innerHTML = '<div style="padding: 2rem; text-align: center;"><h1>Leadership Portal</h1><p style="color: red;">Error loading portal: ' + error.message + '</p></div>';
+            }
+        });
+
+        function checkExistingAuth() {
+            const storedAuth = localStorage.getItem('leadership_auth');
+            if (storedAuth) {
+                try {
+                    const authData = JSON.parse(storedAuth);
+                    if (authData.email && authData.timestamp) {
+                        // Check if auth is still valid (24 hours)
+                        const now = new Date().getTime();
+                        const authTime = new Date(authData.timestamp).getTime();
+                        const hoursDiff = (now - authTime) / (1000 * 60 * 60);
+                        
+                        if (hoursDiff < 24) {
+                            currentUser = authData.email;
+                            isAuthenticated = true;
+                            showLeadershipNav();
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Invalid stored auth data');
+                }
+            }
+            // Clear invalid auth
+            localStorage.removeItem('leadership_auth');
+        }
+
+        // Removed manual email fallback. Google Sign‑In is required.
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status-message');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.classList.remove('hidden');
+        }
+
+        function showLeadershipNav() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('leadership-nav').classList.remove('hidden');
+            const el = document.getElementById('signed-in-email');
+            if (el && currentUser) el.textContent = currentUser;
+        }
+
+        function logout() {
+            localStorage.removeItem('leadership_auth');
+            currentUser = null;
+            isAuthenticated = false;
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('leadership-nav').classList.add('hidden');
+            document.getElementById('status-message').classList.add('hidden');
+        }
+
+        // Domain-based auth flow using Apps Script session
+        function checkDomainAuth() {
+            document.getElementById('loader').style.display = 'flex';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    document.getElementById('loader').style.display = 'none';
+                    if (result && result.success) {
+                        currentUser = result.email;
+                        isAuthenticated = true;
+                        localStorage.setItem('leadership_auth', JSON.stringify({ email: result.email, timestamp: new Date().toISOString() }));
+                        showStatus('✅ Access granted for ' + result.email, 'success');
+                        setTimeout(showLeadershipNav, 400);
+                    } else {
+                        const msg = (result && result.message) ? result.message : 'Not authorized';
+                        showStatus('❌ Access denied: ' + msg, 'error');
+                    }
+                })
+                .withFailureHandler(function(err){
+                    document.getElementById('loader').style.display = 'none';
+                    showStatus('❌ Access check failed: ' + err.message, 'error');
+                })
+                .getLeadershipSessionStatus();
+        }
+
+        function switchAccount() {
+            // Opens Google account chooser so user can switch to their Workspace account
+            const url = 'https://accounts.google.com/AccountChooser?continue=' + encodeURIComponent(BASE_URL + '?page=leadership');
+            window.location.href = url;
+        }
+    </script>
+    
+</body>
+</html>

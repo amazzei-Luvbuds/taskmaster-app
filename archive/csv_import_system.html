@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <?!= include('style.css.html'); ?>
+    <style>
+        .csv-import-section {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .import-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+        }
+        
+        .file-input-button:hover {
+            background: #2563eb;
+        }
+        
+        .department-selector {
+            background: #0f172a;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            padding: 8px 12px;
+            border-radius: 6px;
+            min-width: 150px;
+        }
+        
+        .import-preview {
+            background: #0f172a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .preview-table th,
+        .preview-table td {
+            border: 1px solid #374151;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        
+        .preview-table th {
+            background: #1e293b;
+            font-weight: bold;
+        }
+        
+        .preview-table tr:nth-child(even) {
+            background: #1e293b;
+        }
+        
+        .import-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .department-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .department-tab {
+            background: #374151;
+            color: #e5e7eb;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .department-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .department-tab:hover {
+            background: #4b5563;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .kpi-card {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .kpi-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #e5e7eb;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .kpi-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .kpi-change.positive {
+            color: #10b981;
+        }
+        
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader">Loading CSV Import System...</div>
+    
+    <div class="app-container">
+        <div class="kanban-header">
+            <h2 class="page-title">Department KPI & Task Manager</h2>
+            <div class="kanban-controls">
+                <button class="btn-small" onclick="showImportSection()">Import CSV</button>
+                <button class="btn-small" onclick="showKanbanView()">Kanban View</button>
+                <button class="btn-small" onclick="showDashboardView()">Dashboard</button>
+            </div>
+        </div>
+        
+        <!-- CSV Import Section -->
+        <div id="csv-import-section" class="csv-import-section" style="display: none;">
+            <h3>CSV Import System</h3>
+            <p>Upload your department's KPI CSV file to automatically create tasks and track metrics.</p>
+            
+            <div class="import-controls">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csv-file-input" class="file-input" accept=".csv" onchange="handleFileSelect(event)">
+                    <button class="file-input-button">Choose CSV File</button>
+                </div>
+                
+                <select id="department-selector" class="department-selector">
+                    <option value="">Select Department</option>
+                    <option value="accounting">Accounting</option>
+                    <option value="sales">Sales</option>
+                    <option value="tech">Tech</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="hr">HR</option>
+                    <option value="customer-retention">Customer Retention</option>
+                    <option value="swag">Swag</option>
+                    <option value="ideas">Ideas</option>
+                    <option value="trade-shows">Trade Shows & Merchandising</option>
+                    <option value="purchasing">Purchasing</option>
+                </select>
+                
+                <select id="import-type" class="department-selector">
+                    <option value="kpi-tracking">KPI Tracking</option>
+                    <option value="project-tasks">Project Tasks</option>
+                    <option value="weekly-metrics">Weekly Metrics</option>
+                </select>
+                
+                <button class="btn-primary" onclick="processCSV()" id="process-btn" disabled>Process CSV</button>
+            </div>
+            
+            <div id="import-preview" class="import-preview" style="display: none;">
+                <h4>Preview Data</h4>
+                <div id="preview-content"></div>
+                <div class="import-actions">
+                    <button class="btn-primary" onclick="importData()">Import to Task Manager</button>
+                    <button class="btn-secondary" onclick="cancelImport()">Cancel</button>
+                </div>
+            </div>
+            
+            <div id="import-status"></div>
+        </div>
+        
+        <!-- Department Tabs -->
+        <div class="department-tabs">
+            <button class="department-tab active" onclick="showDepartment('all')">All Departments</button>
+            <button class="department-tab" onclick="showDepartment('accounting')">Accounting</button>
+            <button class="department-tab" onclick="showDepartment('sales')">Sales</button>
+            <button class="department-tab" onclick="showDepartment('tech')">Tech</button>
+            <button class="department-tab" onclick="showDepartment('marketing')">Marketing</button>
+            <button class="department-tab" onclick="showDepartment('hr')">HR</button>
+            <button class="department-tab" onclick="showDepartment('customer-retention')">Customer Retention</button>
+            <button class="department-tab" onclick="showDepartment('swag')">Swag</button>
+            <button class="department-tab" onclick="showDepartment('ideas')">Ideas</button>
+            <button class="department-tab" onclick="showDepartment('trade-shows')">Trade Shows</button>
+            <button class="department-tab" onclick="showDepartment('purchasing')">Purchasing</button>
+        </div>
+        
+        <!-- KPI Dashboard -->
+        <div id="kpi-dashboard">
+            <div class="kpi-grid" id="kpi-grid">
+                <!-- KPI cards will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Kanban Board -->
+        <div id="kanban-board" style="display: none;">
+            <div id="tabs-container" class="tabs-container"></div>
+            <div id="board-container" class="board-container"></div>
+        </div>
+    </div>
+
+    <!-- The Modal for Task Details -->
+    <div id="details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideDetails()">×</span>
+            <div id="modal-body">
+                <!-- Content will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let fullData = { tasks: [], departments: [], users: [] };
+        let csvData = null;
+        let currentDepartment = 'all';
+        const statuses = ['Not Started', 'In Progress', 'Blocked', 'Completed'];
+        
+        // Department configurations
+        const departmentConfigs = {
+            'accounting': {
+                name: 'Accounting',
+                color: '#10b981',
+                kpis: ['Total Revenue YTD', 'Total Revenue MTD', 'Total Revenue QTD', '% Change YTD', '% Change MTD']
+            },
+            'sales': {
+                name: 'Sales',
+                color: '#3b82f6',
+                kpis: ['Calls Made', 'Emails Made', 'New Accounts Opened', 'Order Count', 'Largest Orders', 'Daily Sales Per Rep']
+            },
+            'tech': {
+                name: 'Tech',
+                color: '#8b5cf6',
+                kpis: ['New Tickets Opened', 'Total Tickets Closed', 'Project Status', 'System Health']
+            },
+            'marketing': {
+                name: 'Marketing',
+                color: '#f59e0b',
+                kpis: ['Total Business Won', 'Growth of Organic Traffic', 'Total True Traffic', 'Total Sales Shipped', 'Organic Business Due to SEO']
+            },
+            'hr': {
+                name: 'HR',
+                color: '#ef4444',
+                kpis: ['Late Days %', 'Missing Days %', 'Write ups', 'Complaints', 'Total Employees']
+            },
+            'customer-retention': {
+                name: 'Customer Retention',
+                color: '#06b6d4',
+                kpis: ['Total Calls', 'Total Chats', 'Total Emails', 'Replacement Orders', 'Pending RMAs', 'Completed RMAs']
+            },
+            'swag': {
+                name: 'Swag',
+                color: '#84cc16',
+                kpis: ['Product Mapping', 'Process O2C', 'Inventory Levels']
+            },
+            'ideas': {
+                name: 'Ideas',
+                color: '#f97316',
+                kpis: ['Average Monthly Revenue', 'Average Monthly GM', 'Average Monthly COGS', 'Annual Profit']
+            },
+            'trade-shows': {
+                name: 'Trade Shows & Merchandising',
+                color: '#ec4899',
+                kpis: ['Event Attendance', 'Lead Generation', 'ROI']
+            },
+            'purchasing': {
+                name: 'Purchasing',
+                color: '#6366f1',
+                kpis: ['Purchase Orders', 'Vendor Performance', 'Cost Savings']
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            hideLoader();
+            loadData();
+            showDepartment('all');
+        });
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function showImportSection() {
+            document.getElementById('csv-import-section').style.display = 'block';
+            document.getElementById('kanban-board').style.display = 'none';
+            document.getElementById('kpi-dashboard').style.display = 'block';
+        }
+
+        function showKanbanView() {
+            document.getElementById('csv-import-section').style.display = 'none';
+            document.getElementById('kanban-board').style.display = 'block';
+            document.getElementById('kpi-dashboard').style.display = 'none';
+            renderKanbanBoard();
+        }
+
+        function showDashboardView() {
+            document.getElementById('csv-import-section').style.display = 'none';
+            document.getElementById('kanban-board').style.display = 'none';
+            document.getElementById('kpi-dashboard').style.display = 'block';
+            renderKPIDashboard();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('process-btn').disabled = false;
+                document.getElementById('import-preview').style.display = 'none';
+            }
+        }
+
+        function processCSV() {
+            const fileInput = document.getElementById('csv-file-input');
+            const department = document.getElementById('department-selector').value;
+            const importType = document.getElementById('import-type').value;
+            
+            if (!fileInput.files[0] || !department) {
+                alert('Please select a CSV file and department');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    csvData = results.data;
+                    showPreview(results.data, department, importType);
+                },
+                error: function(error) {
+                    showStatus('Error parsing CSV: ' + error.message, 'error');
+                }
+            });
+        }
+
+        function showPreview(data, department, importType) {
+            const previewContent = document.getElementById('preview-content');
+            const preview = document.getElementById('import-preview');
+            
+            // Create preview table
+            let tableHTML = '<table class="preview-table"><thead><tr>';
+            
+            if (data.length > 0) {
+                Object.keys(data[0]).forEach(key => {
+                    tableHTML += `<th>${key}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                
+                // Show first 10 rows
+                data.slice(0, 10).forEach(row => {
+                    tableHTML += '<tr>';
+                    Object.values(row).forEach(value => {
+                        tableHTML += `<td>${value || ''}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                
+                if (data.length > 10) {
+                    tableHTML += `<tr><td colspan="${Object.keys(data[0]).length}" style="text-align: center; font-style: italic;">... and ${data.length - 10} more rows</td></tr>`;
+                }
+            }
+            
+            tableHTML += '</tbody></table>';
+            previewContent.innerHTML = tableHTML;
+            preview.style.display = 'block';
+            
+            showStatus(`Found ${data.length} rows of data for ${departmentConfigs[department].name}`, 'success');
+        }
+
+        function importData() {
+            if (!csvData) return;
+            
+            const department = document.getElementById('department-selector').value;
+            const importType = document.getElementById('import-type').value;
+            
+            // Convert CSV data to tasks based on department and import type
+            const tasks = convertCSVToTasks(csvData, department, importType);
+            
+            // Add tasks to fullData
+            fullData.tasks = fullData.tasks.concat(tasks);
+            
+            // Save data (you'll need to implement this based on your backend)
+            saveData();
+            
+            showStatus(`Successfully imported ${tasks.length} tasks for ${departmentConfigs[department].name}`, 'success');
+            
+            // Clear form
+            document.getElementById('csv-file-input').value = '';
+            document.getElementById('department-selector').value = '';
+            document.getElementById('import-preview').style.display = 'none';
+            document.getElementById('process-btn').disabled = true;
+            csvData = null;
+            
+            // Refresh views
+            renderKPIDashboard();
+        }
+
+        function convertCSVToTasks(csvData, department, importType) {
+            const tasks = [];
+            const config = departmentConfigs[department];
+            
+            csvData.forEach((row, index) => {
+                // Skip empty rows
+                if (!row || Object.values(row).every(val => !val || val.trim() === '')) return;
+                
+                // Create task based on import type
+                if (importType === 'kpi-tracking') {
+                    // Create KPI tracking tasks
+                    Object.entries(row).forEach(([key, value]) => {
+                        if (value && value.toString().trim() !== '') {
+                            tasks.push({
+                                id: `kpi-${department}-${index}-${key}`,
+                                title: `${key}: ${value}`,
+                                description: `KPI tracking for ${config.name}`,
+                                department: department,
+                                status: 'Not Started',
+                                priority: 'Medium',
+                                assignee: 'Department Lead',
+                                dueDate: new Date().toISOString().split('T')[0],
+                                createdDate: new Date().toISOString(),
+                                type: 'KPI',
+                                kpiValue: value,
+                                kpiMetric: key
+                            });
+                        }
+                    });
+                } else if (importType === 'project-tasks') {
+                    // Create project tasks (especially for Tech department)
+                    if (row['Project'] || row['Task'] || row['Description']) {
+                        tasks.push({
+                            id: `project-${department}-${index}`,
+                            title: row['Project'] || row['Task'] || `Task ${index + 1}`,
+                            description: row['Description'] || row['Notes'] || '',
+                            department: department,
+                            status: row['Status'] || 'Not Started',
+                            priority: row['Priority'] || 'Medium',
+                            assignee: row['Assignee'] || 'Department Lead',
+                            dueDate: row['Due Date'] || new Date().toISOString().split('T')[0],
+                            createdDate: new Date().toISOString(),
+                            type: 'Project'
+                        });
+                    }
+                } else if (importType === 'weekly-metrics') {
+                    // Create weekly metric tasks
+                    Object.entries(row).forEach(([key, value]) => {
+                        if (value && value.toString().trim() !== '' && key !== 'WEEK OF') {
+                            tasks.push({
+                                id: `metric-${department}-${index}-${key}`,
+                                title: `Weekly ${key}: ${value}`,
+                                description: `Weekly metric tracking for ${config.name}`,
+                                department: department,
+                                status: 'In Progress',
+                                priority: 'Low',
+                                assignee: 'Department Lead',
+                                dueDate: new Date().toISOString().split('T')[0],
+                                createdDate: new Date().toISOString(),
+                                type: 'Metric',
+                                metricValue: value,
+                                metricName: key
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return tasks;
+        }
+
+        function showDepartment(dept) {
+            currentDepartment = dept;
+            
+            // Update active tab
+            document.querySelectorAll('.department-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderKPIDashboard();
+        }
+
+        function renderKPIDashboard() {
+            const kpiGrid = document.getElementById('kpi-grid');
+            kpiGrid.innerHTML = '';
+            
+            const departments = currentDepartment === 'all' ? Object.keys(departmentConfigs) : [currentDepartment];
+            
+            departments.forEach(dept => {
+                const config = departmentConfigs[dept];
+                const deptTasks = fullData.tasks.filter(task => task.department === dept);
+                
+                // Create department section
+                const section = document.createElement('div');
+                section.innerHTML = `
+                    <div class="kpi-card">
+                        <div class="kpi-title" style="color: ${config.color}">${config.name}</div>
+                        <div class="kpi-value">${deptTasks.length} Tasks</div>
+                        <div class="kpi-change">
+                            Active: ${deptTasks.filter(t => t.status === 'In Progress').length} | 
+                            Completed: ${deptTasks.filter(t => t.status === 'Completed').length}
+                        </div>
+                    </div>
+                `;
+                kpiGrid.appendChild(section);
+                
+                // Add KPI cards for this department
+                config.kpis.forEach(kpi => {
+                    const kpiTasks = deptTasks.filter(task => 
+                        task.kpiMetric === kpi || task.title.includes(kpi)
+                    );
+                    
+                    if (kpiTasks.length > 0) {
+                        const kpiCard = document.createElement('div');
+                        kpiCard.className = 'kpi-card';
+                        kpiCard.innerHTML = `
+                            <div class="kpi-title">${kpi}</div>
+                            <div class="kpi-value">${kpiTasks[0].kpiValue || kpiTasks[0].metricValue || 'N/A'}</div>
+                            <div class="kpi-change">${kpiTasks.length} entries</div>
+                        `;
+                        kpiGrid.appendChild(kpiCard);
+                    }
+                });
+            });
+        }
+
+        function renderKanbanBoard() {
+            // Your existing kanban board rendering logic
+            // This would be similar to your current kanban.html implementation
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('import-status');
+            statusDiv.innerHTML = `<div class="status-indicator status-${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function cancelImport() {
+            document.getElementById('import-preview').style.display = 'none';
+            csvData = null;
+        }
+
+        function loadData() {
+            // Load existing data from your backend
+            // This would integrate with your current data loading system
+            fullData = {
+                tasks: [],
+                departments: Object.keys(departmentConfigs),
+                users: []
+            };
+        }
+
+        function saveData() {
+            // Save data to your backend
+            // This would integrate with your current data saving system
+            console.log('Saving data:', fullData);
+        }
+
+        function hideDetails() {
+            document.getElementById('details-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; background:#0a0a14; color:#e0e0e0; margin:20px; }
+      .card { background:#121826; padding:16px; border-radius:8px; margin-bottom:16px; }
+      button { background:#1f9d55; color:#fff; border:0; padding:8px 12px; border-radius:6px; cursor:pointer; }
+      button.secondary { background:#2563eb; }
+      button.warn { background:#b91c1c; }
+      input, select { background:#0f172a; color:#e5e7eb; border:1px solid #374151; padding:6px 8px; border-radius:6px; }
+      pre { white-space: pre-wrap; }
+      .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    </style>
+  </head>
+  <body>
+    <h2>Admin Dashboard</h2>
+    <div class="card row">
+      <button onclick="loadSnapshot()" class="secondary">Refresh</button>
+      <button onclick="bumpCache()">Bump Cache Epoch</button>
+      <button onclick="forceClear()" class="warn">Force Clear Caches</button>
+      <label>ENV:</label>
+      <select id="envSel" onchange="setEnv(this.value)"><option>prod</option><option>dev</option></select>
+      <button onclick="checkApis()" class="secondary">Check APIs</button>
+      <button onclick="runTests()" class="secondary">Run Subtasks Tests</button>
+    </div>
+
+    <div class="card">
+      <h3>Snapshot</h3>
+      <pre id="snapshot">Loading…</pre>
+    </div>
+
+    <div class="card">
+      <h3>Sheet Validation</h3>
+      <div class="row"><button onclick="validate()" class="secondary">Validate Headers & Duplicates</button></div>
+      <pre id="validation"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Missing Emails</h3>
+      <div class="row"><button onclick="missingEmails()" class="secondary">List Missing Emails</button></div>
+      <pre id="missing"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Avatar Probe</h3>
+      <div class="row">
+        <input id="probeLimit" type="number" value="10" min="1" max="50"/>
+        <button onclick="probeAvatars()" class="secondary">Probe</button>
+      </div>
+      <pre id="probe"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Task Tools</h3>
+      <div class="row">
+        <input id="taskId" placeholder="Task ID"/>
+        <button onclick="getTask()" class="secondary">Get Task</button>
+        <button onclick="regenPlan()">Regenerate Plan</button>
+      </div>
+      <pre id="task"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Recent Logs</h3>
+      <pre id="logs">Loading…</pre>
+    </div>
+
+    <script>
+      const ADMIN_KEY = '<?= adminKey ?>';
+      function loadSnapshot(){
+        google.script.run.withSuccessHandler(function(res){
+          document.getElementById('snapshot').textContent = JSON.stringify({
+            version: res.version, env: res.env, cacheEpoch: res.cacheEpoch,
+            masterSig: res.masterSig, avatarSig: res.avatarSig,
+            taskRows: res.taskRows, avatarRows: res.avatarRows
+          }, null, 2);
+          document.getElementById('envSel').value = res.env;
+          document.getElementById('logs').textContent = (res.logs||[]).map(l => `[${l.level}] ${l.ts} ${l.ctx} (${l.taskId}) ${l.msg}`).join('\n');
+        }).withFailureHandler(err => alert('Failed: ' + err.message))
+        .adminGetSnapshot(ADMIN_KEY);
+      }
+      function bumpCache(){
+        google.script.run.withSuccessHandler(r => { alert('Cache epoch: ' + r.cacheEpoch); loadSnapshot(); })
+        .withFailureHandler(e => alert(e.message))
+        .adminBumpCache(ADMIN_KEY);
+      }
+      function forceClear(){
+        if(!confirm('Force clear caches and bump epoch?')) return;
+        google.script.run.withSuccessHandler(r => { alert('Done. Epoch: ' + r.cacheEpoch); loadSnapshot(); })
+        .withFailureHandler(e => alert(e.message))
+        .adminForceClearCaches(ADMIN_KEY);
+      }
+      function setEnv(v){
+        google.script.run.withSuccessHandler(r => { alert('ENV set to ' + r.env); loadSnapshot(); })
+        .withFailureHandler(e => alert(e.message))
+        .adminSetEnv(ADMIN_KEY, v);
+      }
+      function checkApis(){
+        google.script.run.withSuccessHandler(r => {
+          alert('Tasks: ' + (r.tasks.enabled ? 'OK' : r.tasks.message) + '\nCalendar: ' + (r.calendar.enabled ? 'OK' : r.calendar.message));
+        }).withFailureHandler(e => alert(e.message)).adminCheckApis(ADMIN_KEY);
+      }
+      function validate(){
+        google.script.run.withSuccessHandler(r => {
+          document.getElementById('validation').textContent = JSON.stringify(r, null, 2);
+        }).withFailureHandler(e => alert(e.message)).adminValidateSheets(ADMIN_KEY);
+      }
+      function missingEmails(){
+        google.script.run.withSuccessHandler(r => {
+          document.getElementById('missing').textContent = JSON.stringify(r, null, 2);
+        }).withFailureHandler(e => alert(e.message)).adminListMissingEmails(ADMIN_KEY);
+      }
+      function probeAvatars(){
+        const limit = Number(document.getElementById('probeLimit').value || 10);
+        google.script.run.withSuccessHandler(r => {
+          document.getElementById('probe').textContent = JSON.stringify(r, null, 2);
+        }).withFailureHandler(e => alert(e.message)).adminProbeAvatars(ADMIN_KEY, limit);
+      }
+      function getTask(){
+        const id = document.getElementById('taskId').value.trim();
+        if(!id) return alert('Enter Task ID');
+        google.script.run.withSuccessHandler(r => {
+          document.getElementById('task').textContent = JSON.stringify(r, null, 2);
+        }).withFailureHandler(e => alert(e.message)).adminGetTask(ADMIN_KEY, id);
+      }
+      function regenPlan(){
+        const id = document.getElementById('taskId').value.trim();
+        if(!id) return alert('Enter Task ID');
+        google.script.run.withSuccessHandler(r => { alert(r.success ? 'Plan regenerated' : ('Failed: ' + r.error)); })
+        .withFailureHandler(e => alert(e.message)).adminRegeneratePlan(ADMIN_KEY, id);
+      }
+      function runTests(){
+        google.script.run.withSuccessHandler(r => {
+          alert(`Subtasks tests: ${r.passed}/${r.total} passed`);
+        }).withFailureHandler(e => alert(e.message)).adminRunSubtasksTests(ADMIN_KEY);
+      }
+      loadSnapshot();
+    </script>
+  </body>
+</html> 

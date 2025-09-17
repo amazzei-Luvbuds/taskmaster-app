@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <base target="_top">
+    <title>Tasks Dashboard</title>
+    <style>
+        body { 
+            background: #0a0a14; 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 2rem; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+            padding: 2rem; 
+            background: rgba(20, 20, 40, 0.7); 
+            border-radius: 8px; 
+            border: 1px solid #374151; 
+        }
+        .nav { 
+            display: flex; 
+            gap: 1rem; 
+            justify-content: center; 
+            margin-bottom: 2rem; 
+            flex-wrap: wrap; 
+        }
+        .nav a { 
+            background: #60a5fa; 
+            color: #0a0a14; 
+            padding: 0.75rem 1.5rem; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            transition: all 0.3s ease; 
+        }
+        .nav a:hover { 
+            background: #3b82f6; 
+            transform: translateY(-2px); 
+        }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: rgba(20, 20, 40, 0.7); 
+            border: 1px solid #374151; 
+            border-radius: 8px; 
+            padding: 1.5rem; 
+            text-align: center; 
+        }
+        .stat-number { 
+            font-size: 2rem; 
+            font-weight: bold; 
+            color: #60a5fa; 
+            margin-bottom: 0.5rem; 
+        }
+        .stat-label { 
+            color: #9ca3af; 
+            font-size: 0.9rem; 
+        }
+        .tasks-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
+            gap: 1.5rem; 
+        }
+        .task-card { 
+            background: rgba(20, 20, 40, 0.7); 
+            border: 1px solid #374151; 
+            border-radius: 8px; 
+            padding: 1.5rem; 
+            transition: all 0.3s ease; 
+        }
+        .task-card:hover { 
+            border-color: #60a5fa; 
+            transform: translateY(-2px); 
+        }
+        .task-id { 
+            color: #60a5fa; 
+            font-weight: bold; 
+            font-size: 0.9rem; 
+        }
+        .task-title { 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            margin: 0.5rem 0; 
+            color: #e0e0e0; 
+        }
+        .task-meta { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: 1rem; 
+            gap: 1rem; 
+            flex-wrap: wrap; 
+        }
+        .status-badge { 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 4px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+        }
+        .status-completed { background: #059669; color: white; }
+        .status-in-progress { background: #f59e0b; color: white; }
+        .status-not-started { background: #6b7280; color: white; }
+        .status-blocked { background: #dc2626; color: white; }
+        .department { 
+            color: #9ca3af; 
+            font-size: 0.9rem; 
+        }
+        .error { 
+            background: rgba(220, 53, 69, 0.1); 
+            border: 1px solid #dc3545; 
+            color: #dc3545; 
+            padding: 1rem; 
+            border-radius: 6px; 
+            text-align: center; 
+        }
+        @media (max-width: 768px) { 
+            .nav { flex-direction: column; align-items: center; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .tasks-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Project Tasks Dashboard</h1>
+            <p>Server-rendered view to bypass JavaScript conflicts</p>
+        </div>
+        
+        <div class="nav">
+            <a href="?page=server&view=dashboard">📊 Dashboard</a>
+            <a href="?page=server&view=kanban">📋 Kanban View</a>
+            <a href="?page=server&view=departments">🏢 Departments</a>
+            <a href="?page=uploader">🤖 AI Uploader</a>
+        </div>
+        
+        <? if (typeof taskData !== 'undefined' && taskData && !taskData.error) { ?>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number"><?= taskData.totalTasks || 0 ?></div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><?= taskData.inProgressTasks || 0 ?></div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><?= taskData.completedTasks || 0 ?></div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number"><?= taskData.overdueTasks || 0 ?></div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+            
+            <? if (taskData.tasks && taskData.tasks.length > 0) { ?>
+                <div class="tasks-grid">
+                    <? taskData.tasks.slice(0, 12).forEach(function(task) { ?>
+                        <div class="task-card">
+                            <div class="task-id"><?= task.taskID || 'No ID' ?></div>
+                            <div class="task-title"><?= task.actionItem || 'No title' ?></div>
+                            <div class="task-meta">
+                                <span class="status-badge status-<?= (task.status || 'not-started').toLowerCase().replace(' ', '-') ?>">
+                                    <?= task.status || 'Not Started' ?>
+                                </span>
+                                <span class="department"><?= task.department || 'No Department' ?></span>
+                            </div>
+                        </div>
+                    <? }); ?>
+                </div>
+            <? } else { ?>
+                <p style="text-align: center; color: #9ca3af;">No tasks found.</p>
+            <? } ?>
+        <? } else { ?>
+            <div class="error">
+                <h3>❌ Data Loading Error</h3>
+                <p><?= taskData && taskData.error ? taskData.error : 'Failed to load task data' ?></p>
+                <p><a href="?page=server&view=dashboard" style="color: #60a5fa;">Try Again</a></p>
+            </div>
+        <? } ?>
+    </div>
+</body>
+</html>

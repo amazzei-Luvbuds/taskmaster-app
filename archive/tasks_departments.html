@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <?!= include('style.css.html'); ?>
+    <script>
+        // Prevent custom element duplication errors
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('custom element') && e.message.includes('already been defined')) {
+                e.preventDefault();
+                console.warn('Custom element already defined - ignoring duplicate registration');
+                return false;
+            }
+        });
+        
+        // Suppress feature policy warnings (they're harmless)
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('Unrecognized feature:') || 
+                message.includes('ambient-light-sensor') ||
+                message.includes('speaker') ||
+                message.includes('vibrate') ||
+                message.includes('vr')) {
+                return; // Suppress these warnings
+            }
+            originalWarn.apply(console, args);
+        };
+
+        // Get the web app URL from the server
+        const webAppUrl = "<?= getWebAppUrl() ?>";
+        console.log('Server-provided web app URL:', webAppUrl);
+        // Make it globally available
+        window.webAppUrl = webAppUrl;
+        
+        // Department dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+            const dropdownButton = dropdown.querySelector('button');
+            
+            // Show dropdown on hover
+            dropdown.addEventListener('mouseenter', function() {
+                dropdownContent.style.display = 'block';
+            });
+            
+            // Hide dropdown when mouse leaves
+            dropdown.addEventListener('mouseleave', function() {
+                dropdownContent.style.display = 'none';
+            });
+            
+            // Add hover effects to dropdown items
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#374151';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = 'transparent';
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <header class="main-header task-header">
+        <nav class="navbar">
+            <div class="container">
+                <a href="<?= getWebAppUrl() ?>" class="navbar-brand interactive"><img src="https://i.imgur.com/Vues1gP.png" alt="LuvBuds Logo" class="navbar-logo"></a>
+                <a href="<?= getWebAppUrl() ?>?page=uploader" target="_blank" class="btn btn-primary interactive">Upload Transcript</a>
+                <a href="<?= getWebAppUrl() ?>?page=kanban" target="_blank" class="btn btn-primary interactive">Kanban View</a>
+                <a href="<?= getWebAppUrl() ?>?page=swag_supply" target="_blank" class="btn btn-primary interactive">🧢 Swag Supply</a>
+                <a href="<?= getWebAppUrl() ?>?page=leadership" target="_blank" class="btn btn-primary interactive" style="background: linear-gradient(135deg, #ffd700, #ffed4e); color: #0a0a14;">🔒 Leadership</a>
+                <a href="<?= getWebAppUrl() ?>" class="btn btn-primary active interactive">Department View</a>
+                
+                <!-- Department Navigation Dropdown -->
+                <div class="dropdown" style="position: relative; display: inline-block;">
+                    <button class="btn btn-primary interactive" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">🏢 Departments</button>
+                    <div class="dropdown-content" style="display: none; position: absolute; background-color: #1e293b; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1000; border: 1px solid #374151; border-radius: 8px; top: 100%; left: 0;">
+                        <a href="<?= getWebAppUrl() ?>?page=accounting" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">💰 Accounting</a>
+                        <a href="<?= getWebAppUrl() ?>?page=sales" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">📞 Sales</a>
+                        <a href="<?= getWebAppUrl() ?>?page=tech" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">💻 Tech</a>
+                        <a href="<?= getWebAppUrl() ?>?page=marketing" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">📈 Marketing</a>
+                        <a href="<?= getWebAppUrl() ?>?page=hr" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">👥 HR</a>
+                        <a href="<?= getWebAppUrl() ?>?page=customer-retention" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">🎧 Customer Retention</a>
+                        <a href="<?= getWebAppUrl() ?>?page=swag" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">🎁 Swag</a>
+                        <a href="<?= getWebAppUrl() ?>?page=ideas" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">💡 Ideas</a>
+                        <a href="<?= getWebAppUrl() ?>?page=trade-shows" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block; border-bottom: 1px solid #374151;">🎪 Trade Shows</a>
+                        <a href="<?= getWebAppUrl() ?>?page=purchasing" class="dropdown-item" style="color: #e5e7eb; padding: 12px 16px; text-decoration: none; display: block;">📦 Purchasing</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section id="mission-log" class="section-tasks">
+            <div class="container">
+                <div class="section-title">
+                    <h2 class="glitch" data-text="Department Task Log">Department Task Log</h2>
+                </div>
+                <div id="milestone-filter-container" class="milestone-filters">
+                    <div class="loader">Loading Milestone Filters...</div>
+                </div>
+                <div id="sort-controls" class="milestone-filters">
+                    <div class="loader">Loading Sort...</div>
+                </div>
+                <div id="status-filter-container" class="department-filters">
+                    <div class="loader">Loading Status...</div>
+                </div>
+                <div id="owner-filter-container" class="department-filters">
+                    <div class="loader">Loading Owners...</div>
+                </div>
+                <div id="department-filter-container" class="department-filters">
+                    <div class="loader">Loading Filters...</div>
+                </div>
+                <div id="task-display-area">
+                    <div class="loader">Loading Tasks...</div>
+                </div>
+                
+            </div>
+        </section>
+    </main>
+    <footer class="main-footer-bottom">
+        <div class="container">
+            <p>> © 2025 LUVBUDS</p>
+        </div>
+    </footer>
+    
+    <?!= include('script.js.html'); ?>
+</body>
+</html>

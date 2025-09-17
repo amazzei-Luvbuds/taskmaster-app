@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0a0a14, #1a1a2e); 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+        
+        .back-link a:hover {
+            color: #ffd700;
+        }
+
+        /* Fullscreen loader overlay */
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 20, 0.85);
+            display: none; /* toggled via JS */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: #ffd700;
+            font-size: 1.1rem;
+            gap: 14px;
+        }
+        .loader-spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 215, 0, 0.25);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader-overlay">
+        <div class="loader-spinner"></div>
+        <div id="loader-text">Loading leadership data…</div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📊 Leadership Dashboard</h1>
+            <p class="subtitle">Strategic Overview & Confidential Analytics</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-tasks">-</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number" id="leadership-tasks">-</div>
+                <div class="stat-label">Leadership Tasks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number" id="regular-tasks">-</div>
+                <div class="stat-label">Regular Tasks</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number" id="departments">-</div>
+                <div class="stat-label">Departments</div>
+            </div>
+        </div>
+        
+        <!-- Filters for list view -->
+        <div id="filters" style="display:flex; gap:12px; align-items:center; margin: 0 0 16px 0;">
+            <label for="dept-select">Department:</label>
+            <select id="dept-select"></select>
+            <label for="status-select">Status:</label>
+            <select id="status-select">
+                <option value="All" selected>All</option>
+                <option>Not Started</option>
+                <option>In Progress</option>
+                <option>Blocked</option>
+                <option>Completed</option>
+            </select>
+            <label for="owner-select">Owner:</label>
+            <select id="owner-select"></select>
+            <input id="search-input" placeholder="Search tasks..." style="flex:1; padding:8px; background:#0f172a; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
+        </div>
+
+        <!-- List view container -->
+        <div id="list-container" style="background: rgba(15,23,42,0.9); border:1px solid #374151; border-radius:12px; overflow:hidden; margin-bottom: 24px;">
+            <div style="display:flex; gap:8px; padding:12px 16px; background:rgba(255,215,0,0.08); border-bottom:1px solid #374151; color:#ffd700; font-weight:bold;">
+                <div style="width:120px;">Task ID</div>
+                <div style="flex:2;">Action</div>
+                <div style="flex:1;">Owner(s)</div>
+                <div style="width:140px;">Department</div>
+                <div style="width:120px;">Status</div>
+                <div style="width:120px;">Created</div>
+            </div>
+            <div id="list-body" style="padding:0 0 8px 0;"></div>
+        </div>
+        
+        <div class="back-link">
+            <a href="<?= getWebAppUrl() ?>?page=leadership">← Back to Leadership Portal</a>
+        </div>
+    </div>
+
+    <script>
+        // Ensure navigation uses absolute Web App URL
+        const BASE_URL = "<?= getWebAppUrl() ?>";
+        // Owner options are derived from tasks (sheet data)
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('Leadership dashboard: Loading data...');
+                showLoader('Loading leadership data…');
+                loadDashboardData();
+            } catch (error) {
+                console.error('Leadership dashboard: Error during initialization:', error);
+            }
+        });
+
+        function loadDashboardData() {
+            // Get all tasks including leadership ones using domain-session auth
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    console.log('Leadership dashboard: Data received:', data);
+                    if (!data || !data.tasks) {
+                        console.warn('Leadership dashboard: No data/tasks, using fallback getTasks()');
+                        google.script.run
+                            .withSuccessHandler(function(tasks) {
+                                const fallbackData = {
+                                    tasks: Array.isArray(tasks) ? tasks : [],
+                                    departments: [...new Set((tasks || []).map(t => t.department).filter(Boolean))].sort()
+                                };
+                                updateDashboard(fallbackData);
+                                hideLoader();
+                            })
+                            .withFailureHandler(function(error) {
+                                console.error('Leadership dashboard: Fallback also failed:', error);
+                                hideLoader();
+                            })
+                            .getTasks();
+                        return;
+                    }
+                    updateDashboard(data);
+                    hideLoader();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Leadership dashboard: Error loading data:', error);
+                    // Fallback to regular tasks if leadership data fails
+                    google.script.run
+                        .withSuccessHandler(function(tasks) {
+                            const fallbackData = {
+                                tasks: Array.isArray(tasks) ? tasks : [],
+                                departments: [...new Set((tasks || []).map(t => t.department).filter(Boolean))].sort()
+                            };
+                            updateDashboard(fallbackData);
+                            hideLoader();
+                        })
+                        .withFailureHandler(function(error) {
+                            console.error('Leadership dashboard: Fallback also failed:', error);
+                            hideLoader();
+                        })
+                        .getTasks();
+                })
+                .getLeadershipKanbanDataForSession();
+        }
+
+        function getCurrentUser() {
+            const storedAuth = localStorage.getItem('leadership_auth');
+            if (storedAuth) { try { return JSON.parse(storedAuth).email; } catch (_) {} }
+            return null;
+        }
+
+        // Normalize leadership flag
+        function isLeadership(task) {
+            const v = task && (task.isLeadership ?? task['isLeadership'] ?? task['IsLeadership'] ?? task['is leadership'] ?? task['Is Leadership']);
+            if (v === true) return true;
+            if (v === false || v === null || v === undefined) return false;
+            const s = String(v).trim();
+            if (s === 'TRUE') return true;
+            const sl = s.toLowerCase();
+            return sl === 'true' || sl === 'yes' || sl === 'y' || sl === '1';
+        }
+
+        // Helpers to normalize owners
+        function getOwnersString(t){
+            if (!t) return '';
+            if (t.owners && String(t.owners).trim() !== '') return String(t.owners);
+            if (t.ownerS && String(t.ownerS).trim() !== '') return String(t.ownerS);
+            if (Array.isArray(t.ownerDetails) && t.ownerDetails.length) return t.ownerDetails.map(o=>o.fullName).join(', ');
+            return '';
+        }
+        function updateDashboard(data) {
+            if (!data || !data.tasks) {
+                console.error('Leadership dashboard: No data to display');
+                return;
+            }
+
+            const allTasks = data.tasks;
+            const leadershipTasks = allTasks.filter(task => isLeadership(task));
+            const regularTasks = allTasks.filter(task => !isLeadership(task));
+            const departments = data.departments || [...new Set(allTasks.map(t => t.department).filter(Boolean))];
+            const owners = Array.from(new Set(allTasks.flatMap(t => String(getOwnersString(t) || '').split(',').map(s => s.trim())).filter(Boolean))).sort();
+
+            document.getElementById('total-tasks').textContent = allTasks.length;
+            document.getElementById('leadership-tasks').textContent = leadershipTasks.length;
+            document.getElementById('regular-tasks').textContent = regularTasks.length;
+            document.getElementById('departments').textContent = departments.length;
+
+            console.log('Leadership dashboard: Updated with', allTasks.length, 'total tasks');
+
+            // Render list view
+            renderFilters(departments, owners);
+            renderTaskList(allTasks);
+        }
+
+        // Filters setup
+        function renderFilters(departments, owners) {
+            const deptSel = document.getElementById('dept-select');
+            if (!deptSel) return;
+            deptSel.innerHTML = '';
+            const optAll = document.createElement('option'); optAll.value = 'All'; optAll.textContent = 'All'; deptSel.appendChild(optAll);
+            (departments || []).forEach(d => { const o = document.createElement('option'); o.textContent = d; o.value = d; deptSel.appendChild(o); });
+            deptSel.onchange = applyListFilters;
+            document.getElementById('status-select').onchange = applyListFilters;
+            document.getElementById('search-input').oninput = applyListFilters;
+
+            const ownerSel = document.getElementById('owner-select');
+            if (ownerSel) {
+                ownerSel.innerHTML = '';
+                const allOpt = document.createElement('option'); allOpt.value = 'All'; allOpt.textContent = 'All'; ownerSel.appendChild(allOpt);
+                (owners || []).forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; ownerSel.appendChild(o); });
+                ownerSel.onchange = applyListFilters;
+            }
+        }
+
+        // Keep last tasks for filtering
+        let LAST_TASKS = [];
+        function renderTaskList(tasks) {
+            LAST_TASKS = Array.isArray(tasks) ? tasks.slice() : [];
+            applyListFilters();
+        }
+
+        function applyListFilters() {
+            const body = document.getElementById('list-body');
+            if (!body) return;
+            body.innerHTML = '';
+            const dept = (document.getElementById('dept-select').value || 'All');
+            const status = (document.getElementById('status-select').value || 'All');
+            const owner = (document.getElementById('owner-select').value || 'All');
+            const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+
+            const filtered = LAST_TASKS.filter(t => {
+                const okDept = (dept === 'All') || (String(t.department || '').toLowerCase() === String(dept).toLowerCase());
+                const okStatus = (status === 'All') || (String(t.status) === status);
+                const ownersLc = String(getOwnersString(t) || '').split(',').map(s=>s.trim().toLowerCase());
+                const okOwner = (owner === 'All') || ownersLc.includes(String(owner).toLowerCase());
+                const okSearch = !q || (String(t.actionItem || '').toLowerCase().includes(q) || String(t.taskID || '').toLowerCase().includes(q));
+                return okDept && okStatus && okOwner && okSearch;
+            });
+
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.padding = '16px';
+                empty.style.color = '#9ca3af';
+                empty.textContent = 'No tasks match the current filters.';
+                body.appendChild(empty);
+                return;
+            }
+
+            filtered.forEach(t => {
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.gap = '8px';
+                row.style.alignItems = 'center';
+                row.style.padding = '10px 16px';
+                row.style.borderBottom = '1px solid #1f2937';
+                row.style.cursor = 'pointer';
+                row.onmouseover = () => row.style.background = 'rgba(255, 215, 0, 0.04)';
+                row.onmouseout = () => row.style.background = 'transparent';
+                const lead = isLeadership(t);
+                if (String(t.status) === 'Completed') { row.style.opacity = '0.75'; row.style.filter = 'grayscale(0.2)'; }
+
+                const detailUrl = `${BASE_URL}?page=task&id=${encodeURIComponent(t.taskID)}`;
+                row.innerHTML = `
+                    <div style=\"width:120px;color:#9ca3af;\">${t.taskID || ''}</div>
+                    <div style=\"flex:2;display:flex;align-items:center;gap:8px;\">${t.actionItem || 'Untitled'} ${lead ? '<span style=\\"background:#ffd700;color:#0a0a14;font-weight:bold;padding:0 6px;border-radius:4px;\\">🔒</span>' : ''}</div>
+                    <div style=\"flex:1;color:#9ca3af;\">${t.owners || '—'}</div>
+                    <div style=\"width:140px;color:#9ca3af;\">${t.department || '—'}</div>
+                    <div style=\"width:120px;\"><span class=\"status-badge status-${(t.status || '').toLowerCase().replace(' ','-')}\">${t.status || 'N/A'}</span></div>
+                    <div style=\"width:120px;color:#9ca3af;\">${t.dateCreated ? new Date(t.dateCreated).toLocaleDateString() : '—'}</div>
+                `;
+                row.onclick = () => window.open(detailUrl, '_blank');
+                body.appendChild(row);
+            });
+        }
+
+        // Loader controls
+        function showLoader(text) {
+            const el = document.getElementById('loader');
+            const lt = document.getElementById('loader-text');
+            if (lt && text) lt.textContent = text;
+            if (el) el.style.display = 'flex';
+        }
+        function hideLoader() {
+            const el = document.getElementById('loader');
+            if (el) el.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

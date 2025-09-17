@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0a0a14, #1a1a2e); 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .admin-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+        
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+        
+        .admin-description {
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .admin-button {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #0a0a14;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .admin-button.danger {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+        }
+        
+        .user-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-email {
+            color: #e0e0e0;
+        }
+        
+        .user-status {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+        
+        .back-link a:hover {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">⚙️ Leadership Admin</h1>
+            <p class="subtitle">Access Management & System Configuration</p>
+        </div>
+        
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h3 class="admin-title">👥 Leadership Access Management</h3>
+                <p class="admin-description">
+                    Manage authorized leadership email addresses and access permissions 
+                    for confidential task management.
+                </p>
+                <button class="admin-button" onclick="viewLeadershipUsers()">
+                    View Authorized Users
+                </button>
+                <button class="admin-button" onclick="addLeadershipUser()">
+                    Add User
+                </button>
+                <button class="admin-button danger" onclick="removeLeadershipUser()">
+                    Remove User
+                </button>
+                
+                <div class="user-list" id="leadership-users" style="display: none;">
+                    <h4 style="color: #ffd700; margin-bottom: 1rem;">Authorized Leadership Users:</h4>
+                    <div id="user-list-content"></div>
+                </div>
+            </div>
+            
+            <div class="admin-card">
+                <h3 class="admin-title">📋 Audit Logs</h3>
+                <p class="admin-description">
+                    View system access logs, authentication attempts, and leadership 
+                    task access history for security monitoring.
+                </p>
+                <button class="admin-button" onclick="viewAuditLogs()">
+                    View Audit Logs
+                </button>
+                <button class="admin-button" onclick="exportAuditLogs()">
+                    Export Logs
+                </button>
+            </div>
+            
+            <div class="admin-card">
+                <h3 class="admin-title">🔧 System Configuration</h3>
+                <p class="admin-description">
+                    Configure leadership task settings, security parameters, and 
+                    system-wide confidential access controls.
+                </p>
+                <button class="admin-button" onclick="openSystemConfig()">
+                    Open Configuration
+                </button>
+                <button class="admin-button" onclick="resetSystemSettings()">
+                    Reset Settings
+                </button>
+            </div>
+            
+            <div class="admin-card">
+                <h3 class="admin-title">🛡️ Security Settings</h3>
+                <p class="admin-description">
+                    Manage authentication requirements, session timeouts, and 
+                    security policies for leadership access.
+                </p>
+                <button class="admin-button" onclick="configureSecurity()">
+                    Configure Security
+                </button>
+                <button class="admin-button danger" onclick="revokeAllAccess()">
+                    Revoke All Access
+                </button>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="<?= getWebAppUrl() ?>?page=leadership">← Back to Leadership Portal</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('Leadership admin: Page loaded');
+            } catch (error) {
+                console.error('Leadership admin: Error during initialization:', error);
+            }
+        });
+
+        function viewLeadershipUsers() {
+            console.log('Viewing leadership users...');
+            const userList = document.getElementById('leadership-users');
+            const userListContent = document.getElementById('user-list-content');
+            
+            // Get authorized users from the backend
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result && result.authorizedEmails) {
+                        userListContent.innerHTML = '';
+                        result.authorizedEmails.forEach(email => {
+                            const userItem = document.createElement('div');
+                            userItem.className = 'user-item';
+                            userItem.innerHTML = `
+                                <span class="user-email">${email}</span>
+                                <span class="user-status">✓ Authorized</span>
+                            `;
+                            userListContent.appendChild(userItem);
+                        });
+                        userList.style.display = 'block';
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Error getting leadership users:', error);
+                    alert('Error loading authorized users');
+                })
+                .verifyLeadershipAccess('admin@test.com'); // This will return the config
+        }
+
+        function addLeadershipUser() {
+            const email = prompt('Enter email address to add to leadership access:');
+            if (email) {
+                console.log('Adding leadership user:', email);
+                alert('User added! (This would normally update the backend configuration)');
+            }
+        }
+
+        function removeLeadershipUser() {
+            const email = prompt('Enter email address to remove from leadership access:');
+            if (email) {
+                console.log('Removing leadership user:', email);
+                alert('User removed! (This would normally update the backend configuration)');
+            }
+        }
+
+        function viewAuditLogs() {
+            console.log('Viewing audit logs...');
+            alert('Audit logs displayed! (This would normally show detailed access logs)');
+        }
+
+        function exportAuditLogs() {
+            console.log('Exporting audit logs...');
+            alert('Audit logs exported! (This would normally download a CSV file)');
+        }
+
+        function openSystemConfig() {
+            console.log('Opening system configuration...');
+            alert('System configuration opened! (This would normally show config options)');
+        }
+
+        function resetSystemSettings() {
+            if (confirm('Are you sure you want to reset all system settings?')) {
+                console.log('Resetting system settings...');
+                alert('System settings reset! (This would normally reset to defaults)');
+            }
+        }
+
+        function configureSecurity() {
+            console.log('Configuring security settings...');
+            alert('Security configuration opened! (This would normally show security options)');
+        }
+
+        function revokeAllAccess() {
+            if (confirm('Are you sure you want to revoke ALL leadership access? This will log out all users.')) {
+                console.log('Revoking all leadership access...');
+                alert('All leadership access revoked! (This would normally clear all auth tokens)');
+            }
+        }
+    </script>
+</body>
+</html>

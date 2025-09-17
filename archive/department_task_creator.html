@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <?!= include('style.css.html'); ?>
+    <style>
+        .department-selector {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dept-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .dept-tab {
+            background: #374151;
+            color: #e5e7eb;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .dept-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .dept-tab:hover {
+            background: #4b5563;
+        }
+        
+        .task-form-container {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .form-section h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            color: #e5e7eb;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: #0f172a;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .kpi-input {
+            background: #0f172a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .kpi-input label {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .kpi-input input {
+            background: transparent;
+            border: none;
+            color: #e5e7eb;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            padding: 5px 0;
+        }
+        
+        .kpi-input input:focus {
+            outline: none;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        
+        .quick-btn:hover {
+            background: #059669;
+        }
+        
+        .quick-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .quick-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .submit-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid #374151;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .recent-tasks {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .task-item {
+            background: #0f172a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-info h4 {
+            color: #e5e7eb;
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        
+        .task-info p {
+            color: #9ca3af;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .task-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-not-started {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .status-in-progress {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-blocked {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .department-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .dept-title {
+            color: #e5e7eb;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .dept-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            color: #3b82f6;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader">Loading Department Task Creator...</div>
+    
+    <div class="app-container">
+        <div class="kanban-header">
+            <h2 class="page-title">Department Task Creator</h2>
+            <div class="kanban-controls">
+                <button class="btn-small" onclick="showKanbanView()">View Kanban</button>
+                <button class="btn-small" onclick="showDashboard()">Dashboard</button>
+            </div>
+        </div>
+        
+        <!-- Department Tabs -->
+            <div class="dept-tabs">
+                <a href="<?= getWebAppUrl() ?>?page=accounting" class="dept-tab">
+                    💰 Accounting
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=sales" class="dept-tab">
+                    📞 Sales
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=tech" class="dept-tab">
+                    💻 Tech
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=marketing" class="dept-tab">
+                    📈 Marketing
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=hr" class="dept-tab">
+                    👥 HR
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=customer-retention" class="dept-tab">
+                    🎧 Customer Retention
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=swag" class="dept-tab">
+                    🎁 Swag
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=ideas" class="dept-tab">
+                    💡 Ideas
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=trade-shows" class="dept-tab">
+                    🎪 Trade Shows
+                </a>
+                <a href="<?= getWebAppUrl() ?>?page=purchasing" class="dept-tab">
+                    📦 Purchasing
+                </a>
+            </div>
+        
+        <!-- Department Content -->
+        <div id="department-content">
+            <!-- Content will be dynamically generated based on selected department -->
+        </div>
+        
+        <!-- Recent Tasks Section -->
+        <div class="recent-tasks">
+            <h3>Recent Tasks Created</h3>
+            <div id="recent-tasks-list">
+                <!-- Recent tasks will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDepartment = 'accounting';
+        let fullData = { tasks: [], departments: [], users: [] };
+        
+        // Department configurations
+        const departmentConfigs = {
+            'accounting': {
+                name: 'Accounting',
+                color: '#10b981',
+                icon: '💰',
+                kpis: [
+                    { name: 'Total Revenue YTD', type: 'currency', placeholder: '$0' },
+                    { name: 'Total Revenue MTD', type: 'currency', placeholder: '$0' },
+                    { name: 'Total Revenue QTD', type: 'currency', placeholder: '$0' },
+                    { name: '% Change YTD', type: 'percentage', placeholder: '0%' },
+                    { name: '% Change MTD', type: 'percentage', placeholder: '0%' }
+                ],
+                quickActions: [
+                    { name: 'Weekly Revenue Review', type: 'task' },
+                    { name: 'Monthly Financial Report', type: 'task' },
+                    { name: 'Budget Analysis', type: 'task' }
+                ]
+            },
+            'sales': {
+                name: 'Sales',
+                color: '#3b82f6',
+                icon: '📞',
+                kpis: [
+                    { name: 'Calls Made', type: 'number', placeholder: '0' },
+                    { name: 'Emails Made', type: 'number', placeholder: '0' },
+                    { name: 'New Accounts Opened', type: 'number', placeholder: '0' },
+                    { name: 'Order Count', type: 'number', placeholder: '0' },
+                    { name: 'Largest Order', type: 'currency', placeholder: '$0' }
+                ],
+                quickActions: [
+                    { name: 'Daily Sales Check-in', type: 'task' },
+                    { name: 'Lead Follow-up', type: 'task' },
+                    { name: 'Account Review', type: 'task' }
+                ]
+            },
+            'tech': {
+                name: 'Tech',
+                color: '#8b5cf6',
+                icon: '💻',
+                kpis: [
+                    { name: 'New Tickets Opened', type: 'number', placeholder: '0' },
+                    { name: 'Total Tickets Closed', type: 'number', placeholder: '0' },
+                    { name: 'System Uptime', type: 'percentage', placeholder: '100%' },
+                    { name: 'Project Progress', type: 'percentage', placeholder: '0%' }
+                ],
+                quickActions: [
+                    { name: 'Bug Fix', type: 'task' },
+                    { name: 'Feature Development', type: 'task' },
+                    { name: 'System Maintenance', type: 'task' }
+                ]
+            },
+            'marketing': {
+                name: 'Marketing',
+                color: '#f59e0b',
+                icon: '📈',
+                kpis: [
+                    { name: 'Total Business Won', type: 'currency', placeholder: '$0' },
+                    { name: 'Growth of Organic Traffic', type: 'percentage', placeholder: '0%' },
+                    { name: 'Total True Traffic', type: 'number', placeholder: '0' },
+                    { name: 'Organic Business Due to SEO', type: 'currency', placeholder: '$0' }
+                ],
+                quickActions: [
+                    { name: 'Campaign Launch', type: 'task' },
+                    { name: 'Content Creation', type: 'task' },
+                    { name: 'SEO Optimization', type: 'task' }
+                ]
+            },
+            'hr': {
+                name: 'HR',
+                color: '#ef4444',
+                icon: '👥',
+                kpis: [
+                    { name: 'Late Days %', type: 'percentage', placeholder: '0%' },
+                    { name: 'Missing Days %', type: 'percentage', placeholder: '0%' },
+                    { name: 'Write ups', type: 'number', placeholder: '0' },
+                    { name: 'Total Employees', type: 'number', placeholder: '0' }
+                ],
+                quickActions: [
+                    { name: 'Employee Review', type: 'task' },
+                    { name: 'Policy Update', type: 'task' },
+                    { name: 'Training Session', type: 'task' }
+                ]
+            },
+            'customer-retention': {
+                name: 'Customer Retention',
+                color: '#06b6d4',
+                icon: '🎧',
+                kpis: [
+                    { name: 'Total Calls', type: 'number', placeholder: '0' },
+                    { name: 'Total Chats', type: 'number', placeholder: '0' },
+                    { name: 'Total Emails', type: 'number', placeholder: '0' },
+                    { name: 'Replacement Orders', type: 'number', placeholder: '0' },
+                    { name: 'Pending RMAs', type: 'number', placeholder: '0' }
+                ],
+                quickActions: [
+                    { name: 'Customer Support Ticket', type: 'task' },
+                    { name: 'RMA Processing', type: 'task' },
+                    { name: 'Quality Check', type: 'task' }
+                ]
+            },
+            'swag': {
+                name: 'Swag',
+                color: '#84cc16',
+                icon: '🎁',
+                kpis: [
+                    { name: 'Product Mapping Progress', type: 'percentage', placeholder: '0%' },
+                    { name: 'Process O2C Status', type: 'percentage', placeholder: '0%' },
+                    { name: 'Inventory Levels', type: 'number', placeholder: '0' }
+                ],
+                quickActions: [
+                    { name: 'Product Mapping', type: 'task' },
+                    { name: 'Inventory Update', type: 'task' },
+                    { name: 'Process Optimization', type: 'task' }
+                ]
+            },
+            'ideas': {
+                name: 'Ideas',
+                color: '#f97316',
+                icon: '💡',
+                kpis: [
+                    { name: 'Average Monthly Revenue', type: 'currency', placeholder: '$0' },
+                    { name: 'Average Monthly GM', type: 'percentage', placeholder: '0%' },
+                    { name: 'Average Monthly COGS', type: 'currency', placeholder: '$0' },
+                    { name: 'Annual Profit', type: 'currency', placeholder: '$0' }
+                ],
+                quickActions: [
+                    { name: 'Strategic Planning', type: 'task' },
+                    { name: 'Growth Analysis', type: 'task' },
+                    { name: 'Business Development', type: 'task' }
+                ]
+            },
+            'trade-shows': {
+                name: 'Trade Shows & Merchandising',
+                color: '#ec4899',
+                icon: '🎪',
+                kpis: [
+                    { name: 'Event Attendance', type: 'number', placeholder: '0' },
+                    { name: 'Lead Generation', type: 'number', placeholder: '0' },
+                    { name: 'ROI', type: 'percentage', placeholder: '0%' }
+                ],
+                quickActions: [
+                    { name: 'Event Planning', type: 'task' },
+                    { name: 'Lead Follow-up', type: 'task' },
+                    { name: 'ROI Analysis', type: 'task' }
+                ]
+            },
+            'purchasing': {
+                name: 'Purchasing',
+                color: '#6366f1',
+                icon: '📦',
+                kpis: [
+                    { name: 'Purchase Orders', type: 'number', placeholder: '0' },
+                    { name: 'Vendor Performance', type: 'percentage', placeholder: '0%' },
+                    { name: 'Cost Savings', type: 'currency', placeholder: '$0' }
+                ],
+                quickActions: [
+                    { name: 'Vendor Management', type: 'task' },
+                    { name: 'Cost Optimization', type: 'task' },
+                    { name: 'Procurement Review', type: 'task' }
+                ]
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            hideLoader();
+            loadData();
+            selectDepartment('accounting');
+        });
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function selectDepartment(dept) {
+            currentDepartment = dept;
+            
+            // Update active tab
+            document.querySelectorAll('.dept-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-dept="${dept}"]`).classList.add('active');
+            
+            // Generate department content
+            generateDepartmentContent(dept);
+        }
+
+        function generateDepartmentContent(dept) {
+            const config = departmentConfigs[dept];
+            const content = document.getElementById('department-content');
+            
+            // Get department stats
+            const deptTasks = fullData.tasks.filter(task => task.department === dept);
+            const activeTasks = deptTasks.filter(task => task.status === 'In Progress').length;
+            const completedTasks = deptTasks.filter(task => task.status === 'Completed').length;
+            
+            content.innerHTML = `
+                <div class="department-header">
+                    <h2 class="dept-title">${config.icon} ${config.name}</h2>
+                    <div class="dept-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">${deptTasks.length}</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${activeTasks}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${completedTasks}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task-form-container">
+                    <div class="form-section">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions">
+                            ${config.quickActions.map(action => `
+                                <button class="quick-btn" onclick="createQuickTask('${action.name}', '${action.type}')">
+                                    ${action.name}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>KPI Tracking</h3>
+                        <div class="kpi-grid">
+                            ${config.kpis.map(kpi => `
+                                <div class="kpi-input">
+                                    <label>${kpi.name}</label>
+                                    <input type="${kpi.type === 'currency' ? 'text' : kpi.type === 'percentage' ? 'text' : 'number'}" 
+                                           placeholder="${kpi.placeholder}" 
+                                           data-kpi="${kpi.name}"
+                                           data-type="${kpi.type}">
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="quick-btn" onclick="createKPITask()">Create KPI Task</button>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Custom Task</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Task Title</label>
+                                <input type="text" id="custom-title" placeholder="Enter task title">
+                            </div>
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select id="custom-priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Assignee</label>
+                                <input type="text" id="custom-assignee" placeholder="Department Lead">
+                            </div>
+                            <div class="form-group">
+                                <label>Due Date</label>
+                                <input type="date" id="custom-due-date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="custom-description" placeholder="Enter task description"></textarea>
+                        </div>
+                        <div class="submit-section">
+                            <button class="btn-primary" onclick="createCustomTask()">Create Task</button>
+                            <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set default due date to next week
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            document.getElementById('custom-due-date').value = nextWeek.toISOString().split('T')[0];
+        }
+
+        function createQuickTask(name, type) {
+            const task = {
+                id: generateTaskId(),
+                title: name,
+                description: `Quick action task for ${departmentConfigs[currentDepartment].name}`,
+                department: currentDepartment,
+                status: 'Not Started',
+                priority: 'Medium',
+                assignee: 'Department Lead',
+                dueDate: getNextWeekDate(),
+                createdDate: new Date().toISOString(),
+                type: type,
+                source: 'Quick Action'
+            };
+            
+            fullData.tasks.push(task);
+            saveData();
+            updateRecentTasks();
+            showSuccessMessage(`Created task: ${name}`);
+        }
+
+        function createKPITask() {
+            const kpiInputs = document.querySelectorAll('.kpi-input input');
+            const kpiData = {};
+            let hasData = false;
+            
+            kpiInputs.forEach(input => {
+                if (input.value.trim()) {
+                    kpiData[input.dataset.kpi] = input.value;
+                    hasData = true;
+                }
+            });
+            
+            if (!hasData) {
+                alert('Please enter at least one KPI value');
+                return;
+            }
+            
+            const task = {
+                id: generateTaskId(),
+                title: `${departmentConfigs[currentDepartment].name} KPI Update`,
+                description: `KPI tracking for ${departmentConfigs[currentDepartment].name}:\n\n${Object.entries(kpiData).map(([key, value]) => `${key}: ${value}`).join('\n')}`,
+                department: currentDepartment,
+                status: 'In Progress',
+                priority: 'Medium',
+                assignee: 'Department Lead',
+                dueDate: new Date().toISOString().split('T')[0],
+                createdDate: new Date().toISOString(),
+                type: 'KPI',
+                kpiData: kpiData,
+                source: 'KPI Tracking'
+            };
+            
+            fullData.tasks.push(task);
+            saveData();
+            updateRecentTasks();
+            showSuccessMessage('KPI task created successfully');
+            
+            // Clear KPI inputs
+            kpiInputs.forEach(input => input.value = '');
+        }
+
+        function createCustomTask() {
+            const title = document.getElementById('custom-title').value.trim();
+            const description = document.getElementById('custom-description').value.trim();
+            const priority = document.getElementById('custom-priority').value;
+            const assignee = document.getElementById('custom-assignee').value.trim() || 'Department Lead';
+            const dueDate = document.getElementById('custom-due-date').value;
+            
+            if (!title) {
+                alert('Please enter a task title');
+                return;
+            }
+            
+            const task = {
+                id: generateTaskId(),
+                title: title,
+                description: description,
+                department: currentDepartment,
+                status: 'Not Started',
+                priority: priority,
+                assignee: assignee,
+                dueDate: dueDate,
+                createdDate: new Date().toISOString(),
+                type: 'Custom',
+                source: 'Custom Task'
+            };
+            
+            fullData.tasks.push(task);
+            saveData();
+            updateRecentTasks();
+            showSuccessMessage(`Created task: ${title}`);
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('custom-title').value = '';
+            document.getElementById('custom-description').value = '';
+            document.getElementById('custom-priority').value = 'Medium';
+            document.getElementById('custom-assignee').value = '';
+            document.getElementById('custom-due-date').value = getNextWeekDate();
+        }
+
+        function updateRecentTasks() {
+            const recentTasks = fullData.tasks
+                .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
+                .slice(0, 5);
+            
+            const recentTasksList = document.getElementById('recent-tasks-list');
+            recentTasksList.innerHTML = recentTasks.map(task => `
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>${task.title}</h4>
+                        <p>${departmentConfigs[task.department].name} • ${task.assignee} • ${formatDate(task.createdDate)}</p>
+                    </div>
+                    <div class="task-status status-${task.status.toLowerCase().replace(' ', '-')}">
+                        ${task.status}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateTaskId() {
+            return 'task-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function getNextWeekDate() {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            return nextWeek.toISOString().split('T')[0];
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function showSuccessMessage(message) {
+            // Create a temporary success message
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 6px;
+                z-index: 1000;
+                font-weight: 500;
+            `;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(messageDiv);
+            }, 3000);
+        }
+
+        function loadData() {
+            // Load existing data from your backend
+            // This would integrate with your current data loading system
+            fullData = {
+                tasks: [],
+                departments: Object.keys(departmentConfigs),
+                users: []
+            };
+        }
+
+        function saveData() {
+            // Save data to your backend
+            // This would integrate with your current data saving system
+            console.log('Saving data:', fullData);
+        }
+
+        function showKanbanView() {
+            // Navigate to kanban view
+            window.location.href = 'kanban.html';
+        }
+
+        function showDashboard() {
+            // Navigate to dashboard view
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

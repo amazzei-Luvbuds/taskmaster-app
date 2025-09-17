@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TaskMaster API Tester</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a14;
+            color: #e0e0e0;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #1e293b, #374151);
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #60a5fa;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 0;
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+        .config-section {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .config-title {
+            color: #f59e0b;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .endpoint-card {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+        .endpoint-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .endpoint-title {
+            color: #3b82f6;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .endpoint-description {
+            color: #9ca3af;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #d1d5db;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        .url-input {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        button:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563, #374151);
+        }
+        .response {
+            background: #111827;
+            border: 1px solid #374151;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .response.success {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #064e3b, #111827);
+        }
+        .response.error {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #7f1d1d, #111827);
+        }
+        .response.loading {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #78350f, #111827);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-loading { background: #f59e0b; }
+        .status-idle { background: #6b7280; }
+        
+        .help-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .response-status {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .response-time {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧪 TaskMaster API Tester</h1>
+            <p>Test your new API endpoints before connecting the modern frontend</p>
+        </div>
+        
+        <!-- Configuration -->
+        <div class="config-section">
+            <div class="config-title">
+                ⚙️ Configuration
+            </div>
+            <div class="form-group">
+                <label for="baseUrl">Apps Script Web App URL:</label>
+                <input type="url" id="baseUrl" class="url-input" 
+                       placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec" />
+                <div class="help-text">
+                    Get this URL from your Apps Script deployment → Deploy → Web app → URL
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button onclick="testConnection()" class="btn-secondary">
+                    🔗 Test Connection
+                </button>
+                <button onclick="clearAllResponses()" class="btn-secondary">
+                    🧹 Clear All Results
+                </button>
+                <button onclick="saveConfig()" class="btn-secondary">
+                    💾 Save Config
+                </button>
+                <button onclick="loadConfig()" class="btn-secondary">
+                    📂 Load Config
+                </button>
+            </div>
+        </div>
+
+        <!-- API Endpoints Grid -->
+        <div class="grid">
+            <!-- Get Tasks -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-getTasks"></span>
+                    📋 Get Tasks
+                </div>
+                <div class="endpoint-description">
+                    Retrieve tasks with optional filtering by department, status, and assignee
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department:</label>
+                        <select id="getDeptFilter">
+                            <option value="">All Departments</option>
+                            <option value="accounting">Accounting</option>
+                            <option value="sales">Sales</option>
+                            <option value="tech">Tech</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="hr">HR</option>
+                            <option value="customer-retention">Customer Retention</option>
+                            <option value="swag">Swag</option>
+                            <option value="ideas">Ideas</option>
+                            <option value="trade-shows">Trade Shows</option>
+                            <option value="purchasing">Purchasing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select id="getStatusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Limit:</label>
+                        <input type="number" id="getTasksLimit" value="10" min="1" max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label>Offset:</label>
+                        <input type="number" id="getTasksOffset" value="0" min="0" />
+                    </div>
+                </div>
+                <button onclick="testGetTasks()">
+                    🔍 Get Tasks
+                </button>
+                <div id="getTasksResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Create Task -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-createTask"></span>
+                    ✏️ Create Task
+                </div>
+                <div class="endpoint-description">
+                    Create a new task with all required and optional fields
+                </div>
+                <div class="form-group">
+                    <label>Action Item (Required):</label>
+                    <input type="text" id="createActionItem" placeholder="Test task from API" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department (Required):</label>
+                        <select id="createDepartment">
+                            <option value="tech">Tech</option>
+                            <option value="sales">Sales</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="accounting">Accounting</option>
+                            <option value="hr">HR</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority:</label>
+                        <select id="createPriority">
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Low">Low</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Assignee:</label>
+                        <input type="text" id="createAssignee" placeholder="John Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date:</label>
+                        <input type="date" id="createDueDate" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="createDescription" rows="3" placeholder="Task description..."></textarea>
+                </div>
+                <button onclick="testCreateTask()">
+                    ➕ Create Task
+                </button>
+                <div id="createTaskResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Departments -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-getDepartments"></span>
+                    🏢 Get Departments
+                </div>
+                <div class="endpoint-description">
+                    Retrieve all available departments with their configuration
+                </div>
+                <button onclick="testGetDepartments()">
+                    🏢 Get Departments
+                </button>
+                <div id="getDepartmentsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Department Stats -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-getStats"></span>
+                    📊 Department Statistics
+                </div>
+                <div class="endpoint-description">
+                    Get detailed statistics for a specific department
+                </div>
+                <div class="form-group">
+                    <label>Department:</label>
+                    <select id="statsDepartment">
+                        <option value="sales">Sales</option>
+                        <option value="tech">Tech</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="accounting">Accounting</option>
+                        <option value="hr">HR</option>
+                    </select>
+                </div>
+                <button onclick="testGetDepartmentStats()">
+                    📈 Get Statistics
+                </button>
+                <div id="getStatsResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Leadership Verification -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-leadership"></span>
+                    🔒 Leadership Access
+                </div>
+                <div class="endpoint-description">
+                    Verify if an email has leadership access permissions
+                </div>
+                <div class="form-group">
+                    <label>Email Address:</label>
+                    <input type="email" id="leadershipEmail" placeholder="test@example.com" />
+                </div>
+                <button onclick="testVerifyLeadership()">
+                    🔐 Verify Leadership
+                </button>
+                <div id="leadershipResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Kanban Data -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-kanban"></span>
+                    📋 Kanban Board Data
+                </div>
+                <div class="endpoint-description">
+                    Get tasks organized by status for kanban board display
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Department:</label>
+                        <select id="kanbanDepartment">
+                            <option value="">All Departments</option>
+                            <option value="sales">Sales</option>
+                            <option value="tech">Tech</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="accounting">Accounting</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Leadership Mode:</label>
+                        <select id="kanbanLeadership">
+                            <option value="false">Regular User</option>
+                            <option value="true">Leadership User</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="testGetKanbanData()">
+                    📊 Get Kanban Data
+                </button>
+                <div id="kanbanResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Update Task -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-updateTask"></span>
+                    ✏️ Update Task
+                </div>
+                <div class="endpoint-description">
+                    Update an existing task's properties
+                </div>
+                <div class="form-group">
+                    <label>Task ID (Required):</label>
+                    <input type="text" id="updateTaskId" placeholder="Enter task ID from Get Tasks" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>New Status:</label>
+                        <select id="updateStatus">
+                            <option value="">Don't Change</option>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>New Priority:</label>
+                        <select id="updatePriority">
+                            <option value="">Don't Change</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>New Assignee:</label>
+                    <input type="text" id="updateAssignee" placeholder="Leave empty to not change" />
+                </div>
+                <button onclick="testUpdateTask()">
+                    ✏️ Update Task
+                </button>
+                <div id="updateTaskResponse" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Get Single Task -->
+            <div class="endpoint-card">
+                <div class="endpoint-title">
+                    <span class="status-indicator status-idle" id="status-getTask"></span>
+                    🔍 Get Single Task
+                </div>
+                <div class="endpoint-description">
+                    Retrieve details for a specific task by ID
+                </div>
+                <div class="form-group">
+                    <label>Task ID:</label>
+                    <input type="text" id="getTaskId" placeholder="Enter task ID" />
+                </div>
+                <button onclick="testGetTask()">
+                    🔍 Get Task Details
+                </button>
+                <div id="getTaskResponse" class="response" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let requestTimers = {};
+
+        function getBaseUrl() {
+            const url = document.getElementById('baseUrl').value;
+            if (!url) {
+                alert('⚠️ Please enter your Apps Script Web App URL first');
+                return null;
+            }
+            return url;
+        }
+
+        function updateStatus(endpointId, status) {
+            const indicator = document.getElementById(`status-${endpointId}`);
+            if (indicator) {
+                indicator.className = `status-indicator status-${status}`;
+            }
+        }
+
+        async function makeApiCall(action, params = {}, endpointId = null) {
+            const baseUrl = getBaseUrl();
+            if (!baseUrl) return;
+
+            if (endpointId) updateStatus(endpointId, 'loading');
+            const startTime = Date.now();
+
+            const url = new URL(baseUrl);
+            url.searchParams.set('action', action);
+            
+            Object.keys(params).forEach(key => {
+                if (params[key] !== '' && params[key] !== null && params[key] !== undefined) {
+                    url.searchParams.set(key, params[key]);
+                }
+            });
+
+            try {
+                console.log('Making API call to:', url.toString());
+                const response = await fetch(url.toString());
+                const responseTime = Date.now() - startTime;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (endpointId) {
+                    updateStatus(endpointId, data.success ? 'success' : 'error');
+                }
+                
+                return { 
+                    success: true, 
+                    data,
+                    responseTime,
+                    httpStatus: response.status 
+                };
+            } catch (error) {
+                if (endpointId) updateStatus(endpointId, 'error');
+                return { 
+                    success: false, 
+                    error: error.message,
+                    responseTime: Date.now() - startTime
+                };
+            }
+        }
+
+        function displayResponse(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            
+            const header = document.createElement('div');
+            header.className = 'response-header';
+            
+            const status = document.createElement('div');
+            status.className = 'response-status';
+            
+            const time = document.createElement('div');
+            time.className = 'response-time';
+            time.textContent = `${result.responseTime}ms`;
+            
+            if (result.success) {
+                element.className = 'response success';
+                status.innerHTML = '✅ Success';
+                
+                if (result.data && result.data.success === false) {
+                    element.className = 'response error';
+                    status.innerHTML = '❌ API Error';
+                }
+            } else {
+                element.className = 'response error';
+                status.innerHTML = '❌ Request Failed';
+            }
+            
+            header.appendChild(status);
+            header.appendChild(time);
+            
+            const content = document.createElement('div');
+            if (result.success) {
+                content.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                content.textContent = `Error: ${result.error}`;
+            }
+            
+            element.innerHTML = '';
+            element.appendChild(header);
+            element.appendChild(content);
+        }
+
+        async function testConnection() {
+            const result = await makeApiCall('getDepartments', {}, 'connection');
+            if (result.success) {
+                alert('✅ Connection successful! Your API is working.');
+            } else {
+                alert(`❌ Connection failed: ${result.error}`);
+            }
+        }
+
+        async function testGetTasks() {
+            const params = {
+                department: document.getElementById('getDeptFilter').value,
+                status: document.getElementById('getStatusFilter').value,
+                limit: document.getElementById('getTasksLimit').value,
+                offset: document.getElementById('getTasksOffset').value
+            };
+            
+            const result = await makeApiCall('getTasks', params, 'getTasks');
+            displayResponse('getTasksResponse', result);
+        }
+
+        async function testCreateTask() {
+            const actionItem = document.getElementById('createActionItem').value;
+            const department = document.getElementById('createDepartment').value;
+            
+            if (!actionItem.trim()) {
+                alert('⚠️ Please enter an action item');
+                return;
+            }
+            
+            const params = {
+                actionItem: actionItem,
+                department: department,
+                assignee: document.getElementById('createAssignee').value,
+                priority: document.getElementById('createPriority').value,
+                dueDate: document.getElementById('createDueDate').value,
+                description: document.getElementById('createDescription').value
+            };
+            
+            const result = await makeApiCall('createTask', params, 'createTask');
+            displayResponse('createTaskResponse', result);
+            
+            if (result.success && result.data && result.data.success) {
+                // Clear form after successful creation
+                document.getElementById('createActionItem').value = '';
+                document.getElementById('createAssignee').value = '';
+                document.getElementById('createDescription').value = '';
+            }
+        }
+
+        async function testGetDepartments() {
+            const result = await makeApiCall('getDepartments', {}, 'getDepartments');
+            displayResponse('getDepartmentsResponse', result);
+        }
+
+        async function testGetDepartmentStats() {
+            const params = {
+                department: document.getElementById('statsDepartment').value
+            };
+            
+            const result = await makeApiCall('getDepartmentStats', params, 'getStats');
+            displayResponse('getStatsResponse', result);
+        }
+
+        async function testVerifyLeadership() {
+            const email = document.getElementById('leadershipEmail').value;
+            
+            if (!email.trim()) {
+                alert('⚠️ Please enter an email address');
+                return;
+            }
+            
+            const params = { email: email };
+            const result = await makeApiCall('verifyLeadership', params, 'leadership');
+            displayResponse('leadershipResponse', result);
+        }
+
+        async function testGetKanbanData() {
+            const params = {
+                department: document.getElementById('kanbanDepartment').value,
+                isLeadership: document.getElementById('kanbanLeadership').value,
+                userEmail: document.getElementById('leadershipEmail').value || 'test@example.com'
+            };
+            
+            const result = await makeApiCall('getKanbanData', params, 'kanban');
+            displayResponse('kanbanResponse', result);
+        }
+
+        async function testUpdateTask() {
+            const taskId = document.getElementById('updateTaskId').value;
+            
+            if (!taskId.trim()) {
+                alert('⚠️ Please enter a task ID');
+                return;
+            }
+            
+            const params = {
+                id: taskId,
+                status: document.getElementById('updateStatus').value,
+                priority: document.getElementById('updatePriority').value,
+                assignee: document.getElementById('updateAssignee').value
+            };
+            
+            const result = await makeApiCall('updateTask', params, 'updateTask');
+            displayResponse('updateTaskResponse', result);
+        }
+
+        async function testGetTask() {
+            const taskId = document.getElementById('getTaskId').value;
+            
+            if (!taskId.trim()) {
+                alert('⚠️ Please enter a task ID');
+                return;
+            }
+            
+            const params = { id: taskId };
+            const result = await makeApiCall('getTask', params, 'getTask');
+            displayResponse('getTaskResponse', result);
+        }
+
+        function clearAllResponses() {
+            const responses = document.querySelectorAll('.response');
+            responses.forEach(response => {
+                response.style.display = 'none';
+                response.innerHTML = '';
+            });
+            
+            const indicators = document.querySelectorAll('.status-indicator');
+            indicators.forEach(indicator => {
+                indicator.className = 'status-indicator status-idle';
+            });
+        }
+
+        function saveConfig() {
+            const config = {
+                baseUrl: document.getElementById('baseUrl').value,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('taskmaster-api-config', JSON.stringify(config));
+            alert('✅ Configuration saved to browser storage');
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem('taskmaster-api-config');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    document.getElementById('baseUrl').value = config.baseUrl || '';
+                    alert(`✅ Configuration loaded (saved ${new Date(config.timestamp).toLocaleString()})`);
+                } catch (e) {
+                    alert('❌ Failed to load saved configuration');
+                }
+            } else {
+                alert('ℹ️ No saved configuration found');
+            }
+        }
+
+        // Auto-load config on page load
+        window.onload = function() {
+            loadConfig();
+            
+            // Set default due date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('createDueDate').value = tomorrow.toISOString().split('T')[0];
+        };
+
+        // Auto-save URL when changed
+        document.getElementById('baseUrl').addEventListener('blur', saveConfig);
+    </script>
+</body>
+</html>

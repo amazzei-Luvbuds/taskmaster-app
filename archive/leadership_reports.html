@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #0a0a14, #1a1a2e); 
+            color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 12px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .report-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+        
+        .report-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+        
+        .report-description {
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .report-button {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #0a0a14;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .report-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+        
+        .back-link a:hover {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">📈 Leadership Reports</h1>
+            <p class="subtitle">Confidential Analytics & Executive Insights</p>
+        </div>
+        
+        <div class="reports-grid">
+            <div class="report-card">
+                <h3 class="report-title">📊 Task Overview Report</h3>
+                <p class="report-description">
+                    Comprehensive analysis of all tasks including leadership initiatives, 
+                    department breakdowns, and completion rates.
+                </p>
+                <button class="report-button" onclick="generateTaskReport()">
+                    Generate Report
+                </button>
+            </div>
+            
+            <div class="report-card">
+                <h3 class="report-title">👥 Team Performance Report</h3>
+                <p class="report-description">
+                    Detailed performance metrics for all team members, including 
+                    confidential leadership task assignments and progress tracking.
+                </p>
+                <button class="report-button" onclick="generateTeamReport()">
+                    Generate Report
+                </button>
+            </div>
+            
+            <div class="report-card">
+                <h3 class="report-title">🏢 Department Analysis</h3>
+                <p class="report-description">
+                    Strategic analysis of department workloads, leadership task distribution, 
+                    and cross-departmental collaboration metrics.
+                </p>
+                <button class="report-button" onclick="generateDepartmentReport()">
+                    Generate Report
+                </button>
+            </div>
+            
+            <div class="report-card">
+                <h3 class="report-title">🔒 Leadership Confidential Report</h3>
+                <p class="report-description">
+                    Exclusive report containing sensitive leadership tasks, strategic initiatives, 
+                    and confidential project status updates.
+                </p>
+                <button class="report-button" onclick="generateLeadershipReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="<?= getWebAppUrl() ?>?page=leadership">← Back to Leadership Portal</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('Leadership reports: Page loaded');
+            } catch (error) {
+                console.error('Leadership reports: Error during initialization:', error);
+            }
+        });
+
+        function generateTaskReport() {
+            console.log('Generating task overview report...');
+            alert('Task Overview Report generated! (This would normally export/download the report)');
+        }
+
+        function generateTeamReport() {
+            console.log('Generating team performance report...');
+            alert('Team Performance Report generated! (This would normally export/download the report)');
+        }
+
+        function generateDepartmentReport() {
+            console.log('Generating department analysis report...');
+            alert('Department Analysis Report generated! (This would normally export/download the report)');
+        }
+
+        function generateLeadershipReport() {
+            console.log('Generating leadership confidential report...');
+            alert('Leadership Confidential Report generated! (This would normally export/download the report)');
+        }
+    </script>
+</body>
+</html>

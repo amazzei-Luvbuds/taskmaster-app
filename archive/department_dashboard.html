@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <?!= include('style.css.html'); ?>
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-title {
+            color: #e5e7eb;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .dashboard-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .dept-selector {
+            background: #1e293b;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .kpi-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--dept-color, #3b82f6);
+        }
+        
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .kpi-title {
+            color: #9ca3af;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .kpi-value {
+            color: #e5e7eb;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-change {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .kpi-change.positive {
+            color: #10b981;
+        }
+        
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+        
+        .kpi-change.neutral {
+            color: #6b7280;
+        }
+        
+        .tasks-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .task-column {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .column-title {
+            color: #e5e7eb;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .task-count {
+            background: #374151;
+            color: #e5e7eb;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .task-item {
+            background: #0f172a;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .task-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        .task-title {
+            color: #e5e7eb;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .task-meta {
+            color: #9ca3af;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-priority {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .priority-high {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .priority-medium {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .priority-low {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .quick-actions {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-actions h3 {
+            color: #e5e7eb;
+            margin-bottom: 15px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 14px;
+        }
+        
+        .action-btn:hover {
+            background: #059669;
+        }
+        
+        .action-btn.secondary {
+            background: #6b7280;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .recent-activity {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .recent-activity h3 {
+            color: #e5e7eb;
+            margin-bottom: 15px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #374151;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            color: #e5e7eb;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+        
+        .empty-state h4 {
+            color: #e5e7eb;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader" class="loader">Loading Department Dashboard...</div>
+    
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Department Dashboard</h1>
+            <div class="dashboard-controls">
+                <select id="department-selector" class="dept-selector">
+                    <option value="all">All Departments</option>
+                    <option value="accounting">💰 Accounting</option>
+                    <option value="sales">📞 Sales</option>
+                    <option value="tech">💻 Tech</option>
+                    <option value="marketing">📈 Marketing</option>
+                    <option value="hr">👥 HR</option>
+                    <option value="customer-retention">🎧 Customer Retention</option>
+                    <option value="swag">🎁 Swag</option>
+                    <option value="ideas">💡 Ideas</option>
+                    <option value="trade-shows">🎪 Trade Shows</option>
+                    <option value="purchasing">📦 Purchasing</option>
+                </select>
+                <button class="btn" onclick="goToDepartment()">Go to Department</button>
+                <a href="department_task_creator.html" class="btn">Create Task</a>
+                <a href="kanban.html" class="btn btn-secondary">Kanban View</a>
+            </div>
+        </div>
+        
+        <!-- KPI Overview -->
+        <div class="kpi-overview" id="kpi-overview">
+            <!-- KPI cards will be populated here -->
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="createQuickTask('Weekly Review')">Weekly Review</button>
+                <button class="action-btn" onclick="createQuickTask('Team Check-in')">Team Check-in</button>
+                <button class="action-btn" onclick="createQuickTask('KPI Update')">KPI Update</button>
+                <button class="action-btn secondary" onclick="showAllTasks()">View All Tasks</button>
+                <button class="action-btn secondary" onclick="exportData()">Export Data</button>
+            </div>
+        </div>
+        
+        <!-- Tasks by Status -->
+        <div class="tasks-section" id="tasks-section">
+            <!-- Task columns will be populated here -->
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3>Recent Activity</h3>
+            <div id="recent-activity-list">
+                <!-- Recent activity will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDepartment = 'all';
+        let fullData = { tasks: [], departments: [], users: [] };
+        
+        // Department configurations
+        const departmentConfigs = {
+            'accounting': {
+                name: 'Accounting',
+                color: '#10b981',
+                icon: '💰',
+                kpis: ['Total Revenue YTD', 'Total Revenue MTD', 'Total Revenue QTD', '% Change YTD', '% Change MTD']
+            },
+            'sales': {
+                name: 'Sales',
+                color: '#3b82f6',
+                icon: '📞',
+                kpis: ['Calls Made', 'Emails Made', 'New Accounts Opened', 'Order Count', 'Largest Order']
+            },
+            'tech': {
+                name: 'Tech',
+                color: '#8b5cf6',
+                icon: '💻',
+                kpis: ['New Tickets Opened', 'Total Tickets Closed', 'System Uptime', 'Project Progress']
+            },
+            'marketing': {
+                name: 'Marketing',
+                color: '#f59e0b',
+                icon: '📈',
+                kpis: ['Total Business Won', 'Growth of Organic Traffic', 'Total True Traffic', 'Organic Business Due to SEO']
+            },
+            'hr': {
+                name: 'HR',
+                color: '#ef4444',
+                icon: '👥',
+                kpis: ['Late Days %', 'Missing Days %', 'Write ups', 'Total Employees']
+            },
+            'customer-retention': {
+                name: 'Customer Retention',
+                color: '#06b6d4',
+                icon: '🎧',
+                kpis: ['Total Calls', 'Total Chats', 'Total Emails', 'Replacement Orders', 'Pending RMAs']
+            },
+            'swag': {
+                name: 'Swag',
+                color: '#84cc16',
+                icon: '🎁',
+                kpis: ['Product Mapping Progress', 'Process O2C Status', 'Inventory Levels']
+            },
+            'ideas': {
+                name: 'Ideas',
+                color: '#f97316',
+                icon: '💡',
+                kpis: ['Average Monthly Revenue', 'Average Monthly GM', 'Average Monthly COGS', 'Annual Profit']
+            },
+            'trade-shows': {
+                name: 'Trade Shows & Merchandising',
+                color: '#ec4899',
+                icon: '🎪',
+                kpis: ['Event Attendance', 'Lead Generation', 'ROI']
+            },
+            'purchasing': {
+                name: 'Purchasing',
+                color: '#6366f1',
+                icon: '📦',
+                kpis: ['Purchase Orders', 'Vendor Performance', 'Cost Savings']
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            hideLoader();
+            loadData();
+            setupEventListeners();
+            renderDashboard();
+        });
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function setupEventListeners() {
+            document.getElementById('department-selector').addEventListener('change', function() {
+                currentDepartment = this.value;
+                renderDashboard();
+            });
+        }
+
+        function renderDashboard() {
+            renderKPIOverview();
+            renderTasksSection();
+            renderRecentActivity();
+        }
+
+        function renderKPIOverview() {
+            const kpiOverview = document.getElementById('kpi-overview');
+            const departments = currentDepartment === 'all' ? Object.keys(departmentConfigs) : [currentDepartment];
+            
+            kpiOverview.innerHTML = '';
+            
+            departments.forEach(dept => {
+                const config = departmentConfigs[dept];
+                const deptTasks = fullData.tasks.filter(task => task.department === dept);
+                
+                // Create department summary card
+                const summaryCard = createKPICard(
+                    `${config.icon} ${config.name}`,
+                    deptTasks.length.toString(),
+                    'Total Tasks',
+                    'neutral',
+                    config.color
+                );
+                kpiOverview.appendChild(summaryCard);
+                
+                // Create KPI cards for this department
+                config.kpis.forEach(kpi => {
+                    const kpiTasks = deptTasks.filter(task => 
+                        task.kpiData && task.kpiData[kpi] || 
+                        task.title.includes(kpi) ||
+                        task.kpiMetric === kpi
+                    );
+                    
+                    if (kpiTasks.length > 0) {
+                        const latestTask = kpiTasks.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))[0];
+                        const value = latestTask.kpiData ? latestTask.kpiData[kpi] : latestTask.kpiValue || 'N/A';
+                        
+                        const kpiCard = createKPICard(
+                            kpi,
+                            value,
+                            `${kpiTasks.length} entries`,
+                            'neutral',
+                            config.color
+                        );
+                        kpiOverview.appendChild(kpiCard);
+                    }
+                });
+            });
+        }
+
+        function createKPICard(title, value, change, changeType, color) {
+            const card = document.createElement('div');
+            card.className = 'kpi-card';
+            card.style.setProperty('--dept-color', color);
+            
+            card.innerHTML = `
+                <div class="kpi-header">
+                    <div class="kpi-title">${title}</div>
+                </div>
+                <div class="kpi-value">${value}</div>
+                <div class="kpi-change ${changeType}">${change}</div>
+            `;
+            
+            return card;
+        }
+
+        function renderTasksSection() {
+            const tasksSection = document.getElementById('tasks-section');
+            const statuses = ['Not Started', 'In Progress', 'Blocked', 'Completed'];
+            
+            tasksSection.innerHTML = '';
+            
+            statuses.forEach(status => {
+                const tasks = fullData.tasks.filter(task => 
+                    task.status === status && 
+                    (currentDepartment === 'all' || task.department === currentDepartment)
+                );
+                
+                const column = document.createElement('div');
+                column.className = 'task-column';
+                column.innerHTML = `
+                    <div class="column-header">
+                        <div class="column-title">${status}</div>
+                        <div class="task-count">${tasks.length}</div>
+                    </div>
+                    <div class="task-list">
+                        ${tasks.length > 0 ? 
+                            tasks.slice(0, 5).map(task => createTaskItem(task)).join('') :
+                            `<div class="empty-state">
+                                <h4>No tasks</h4>
+                                <p>No tasks in ${status.toLowerCase()} status</p>
+                            </div>`
+                        }
+                        ${tasks.length > 5 ? `<div class="task-item" style="text-align: center; color: #9ca3af; font-size: 12px;">... and ${tasks.length - 5} more</div>` : ''}
+                    </div>
+                `;
+                
+                tasksSection.appendChild(column);
+            });
+        }
+
+        function createTaskItem(task) {
+            const config = departmentConfigs[task.department];
+            const priorityClass = `priority-${task.priority.toLowerCase()}`;
+            
+            return `
+                <div class="task-item" onclick="viewTask('${task.id}')">
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-meta">
+                        <span>${config.icon} ${config.name}</span>
+                        <span class="task-priority ${priorityClass}">${task.priority}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRecentActivity() {
+            const recentActivityList = document.getElementById('recent-activity-list');
+            const recentTasks = fullData.tasks
+                .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
+                .slice(0, 10);
+            
+            if (recentTasks.length === 0) {
+                recentActivityList.innerHTML = `
+                    <div class="empty-state">
+                        <h4>No recent activity</h4>
+                        <p>Create your first task to see activity here</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            recentActivityList.innerHTML = recentTasks.map(task => {
+                const config = departmentConfigs[task.department];
+                const timeAgo = getTimeAgo(task.createdDate);
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: ${config.color}20; color: ${config.color}">
+                            ${config.icon}
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">Created task: ${task.title}</div>
+                            <div class="activity-time">${config.name} • ${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        }
+
+        function createQuickTask(name) {
+            // This would integrate with your task creation system
+            console.log(`Creating quick task: ${name}`);
+            // You could redirect to the task creator or show a modal
+            window.location.href = `department_task_creator.html?quick=${encodeURIComponent(name)}`;
+        }
+
+        function showAllTasks() {
+            window.location.href = 'kanban.html';
+        }
+
+        function exportData() {
+            // Export current department data
+            const data = currentDepartment === 'all' ? 
+                fullData.tasks : 
+                fullData.tasks.filter(task => task.department === currentDepartment);
+            
+            const csv = convertToCSV(data);
+            downloadCSV(csv, `${currentDepartment}_tasks.csv`);
+        }
+
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            
+            const headers = ['Title', 'Department', 'Status', 'Priority', 'Assignee', 'Due Date', 'Created Date'];
+            const rows = data.map(task => [
+                task.title,
+                departmentConfigs[task.department].name,
+                task.status,
+                task.priority,
+                task.assignee,
+                task.dueDate,
+                task.createdDate
+            ]);
+            
+            return [headers, ...rows].map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function viewTask(taskId) {
+            // This would show task details in a modal or navigate to task view
+            console.log(`Viewing task: ${taskId}`);
+        }
+
+        function goToDepartment() {
+            const selectedDept = document.getElementById('department-selector').value;
+            if (selectedDept === 'all') {
+                alert('Please select a specific department');
+                return;
+            }
+            window.location.href = `<?= getWebAppUrl() ?>?page=${selectedDept}`;
+        }
+
+        function loadData() {
+            // Load existing data from your backend
+            // This would integrate with your current data loading system
+            fullData = {
+                tasks: [],
+                departments: Object.keys(departmentConfigs),
+                users: []
+            };
+        }
+    </script>
+</body>
+</html>

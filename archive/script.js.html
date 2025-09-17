@@ -1,0 +1,963 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // This function structure is correct.
+        fetchData();
+    });
+
+    // Owner names are populated from the sheet (server) or derived from tasks
+
+    // Normalize and detect leadership flag on a task object
+    function isLeadershipTask(t) {
+        const cand = (t && (t.isLeadership ?? t['isLeadership'] ?? t['IsLeadership'] ?? t['is leadership'] ?? t['Is Leadership']));
+        if (cand === true) return true;
+        if (cand === false || cand === null || cand === undefined) return false;
+        const s = String(cand).trim();
+        if (s === 'TRUE') return true;
+        const sl = s.toLowerCase();
+        return sl === 'true' || sl === 'yes' || sl === 'y' || sl === '1';
+    }
+
+    // Helper: derive owners string from a task across variants
+    function getOwnersString(task){
+        if (!task) return '';
+        let s = '';
+        if (task.owners && String(task.owners).trim() !== '') s = String(task.owners);
+        else if (task.ownerS && String(task.ownerS).trim() !== '') s = String(task.ownerS);
+        else if (Array.isArray(task.ownerDetails) && task.ownerDetails.length) {
+            s = task.ownerDetails.map(o => o.fullName).join(', ');
+        }
+        return s;
+    }
+
+    function fetchData() {
+        // This function is essential and has been restored.
+        document.getElementById('milestone-filter-container').innerHTML = '<div class="loader">Loading Milestone Filters...</div>';
+        document.getElementById('department-filter-container').innerHTML = '<div class="loader">Loading Filters...</div>';
+        const ownerContainer = document.getElementById('owner-filter-container');
+        if (ownerContainer) ownerContainer.innerHTML = '<div class="loader">Loading Owners...</div>';
+        document.getElementById('task-display-area').innerHTML = '<div class="loader">Loading Tasks...</div>';
+        google.script.run.withSuccessHandler(renderMilestones).withFailureHandler(handleError).getMilestoneGroups();
+        renderSortControls();
+        renderStatusControls();
+        google.script.run.withSuccessHandler(renderDepartments).withFailureHandler(handleError).getDepartmentsFromSheet();
+        if (ownerContainer) {
+            // Prefer server-provided users from the sheet; on failure we fall back after tasks load
+            google.script.run
+              .withSuccessHandler(renderOwners)
+              .withFailureHandler(function(_) { /* fallback occurs after tasks load */ })
+              .getUsersFromSheet();
+        }
+        // Try getKanbanData first, fallback to getTasks if it fails
+        google.script.run
+            .withSuccessHandler(function(data) {
+                if (data && data.tasks) {
+                    // getKanbanData worked
+                    renderTasks(data);
+                } else {
+                    // getKanbanData failed, try getTasks as fallback
+                    console.log('getKanbanData failed, trying getTasks fallback');
+                    google.script.run
+                        .withSuccessHandler(function(tasks) {
+                            // Convert getTasks format to getKanbanData format
+                            const fallbackData = {
+                                tasks: tasks,
+                                departments: [...new Set(tasks.map(t => t.department).filter(Boolean))].sort(),
+                                users: [...new Set(tasks.map(t => t.owners).filter(Boolean))].sort(),
+                                userRole: 'regular'
+                            };
+                            renderTasks(fallbackData);
+                        })
+                        .withFailureHandler(handleError)
+                        .getTasks();
+                }
+            })
+            .withFailureHandler(function(error) {
+                console.log('getKanbanData failed with error:', error);
+                // Try getTasks as fallback
+                google.script.run
+                    .withSuccessHandler(function(tasks) {
+                        const fallbackData = {
+                            tasks: tasks,
+                            departments: [...new Set(tasks.map(t => t.department).filter(Boolean))].sort(),
+                            users: [...new Set(tasks.map(t => t.owners).filter(Boolean))].sort(),
+                            userRole: 'regular'
+                        };
+                        renderTasks(fallbackData);
+                    })
+                    .withFailureHandler(handleError)
+                    .getTasks();
+            })
+            .getKanbanData();
+    }
+
+    function renderDepartments(departments) {
+        if (!departments || departments.length === 0) {
+             document.getElementById('department-filter-container').innerHTML = '<p class="error-message">No departments found.</p>';
+             return;
+        }
+        const container = document.getElementById('department-filter-container');
+        container.innerHTML = '';
+        const label = document.createElement('label');
+        label.textContent = 'Department:';
+        label.style.marginRight = '8px';
+        const select = document.createElement('select');
+        select.id = 'department-select';
+        select.className = 'department-select';
+        const optAll = document.createElement('option'); optAll.value = 'All'; optAll.textContent = 'All Departments'; select.appendChild(optAll);
+        departments.forEach(dept => { const o = document.createElement('option'); o.value = dept; o.textContent = dept; select.appendChild(o); });
+        select.addEventListener('change', () => filterTasks(select.value));
+        container.appendChild(label);
+        container.appendChild(select);
+    }
+
+    function renderOwners(users) {
+        const container = document.getElementById('owner-filter-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const label = document.createElement('label');
+        label.textContent = 'Owner:';
+        label.style.marginRight = '8px';
+        const select = document.createElement('select');
+        select.id = 'owner-select';
+        select.className = 'department-select';
+        const optAll = document.createElement('option'); optAll.value = 'All'; optAll.textContent = 'All Owners'; select.appendChild(optAll);
+        (users || []).forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; select.appendChild(o); });
+        select.addEventListener('change', () => filterTasks(document.getElementById('department-select')?.value || 'All'));
+        container.appendChild(label);
+        container.appendChild(select);
+    }
+    
+    function renderMilestones(milestones) {
+        if (!milestones || milestones.length === 0) {
+             document.getElementById('milestone-filter-container').innerHTML = '<p class="error-message">No milestones found.</p>';
+             return;
+        }
+        const container = document.getElementById('milestone-filter-container');
+        container.innerHTML = ''; 
+        
+        // Create dropdown container
+        const dropdownContainer = document.createElement('div');
+        dropdownContainer.className = 'milestone-dropdown-container';
+        
+        // Create label
+        const label = document.createElement('label');
+        label.textContent = 'Filter by Milestone:';
+        label.className = 'milestone-label';
+        dropdownContainer.appendChild(label);
+        
+        // Create select element
+        const select = document.createElement('select');
+        select.className = 'milestone-select';
+        select.id = 'milestone-select';
+        
+        // Add "All Milestones" option
+        const allOption = document.createElement('option');
+        allOption.value = 'All';
+        allOption.textContent = 'All Milestones';
+        allOption.selected = true;
+        select.appendChild(allOption);
+        
+        // Add milestone options
+        milestones.forEach(milestone => {
+            const option = document.createElement('option');
+            option.value = milestone;
+            option.textContent = milestone;
+            select.appendChild(option);
+        });
+        
+        // Add change event listener
+        select.addEventListener('change', function() {
+            filterTasksByMilestone(this.value);
+        });
+        
+        dropdownContainer.appendChild(select);
+        container.appendChild(dropdownContainer);
+    }
+
+    function renderSortControls() {
+        const container = document.getElementById('sort-controls');
+        container.innerHTML = '';
+        const label = document.createElement('label'); label.textContent = 'Sort:'; label.style.marginRight = '8px';
+        const select = document.createElement('select'); select.id = 'sort-select';
+        [{v:'created_desc',t:'Newest first'},{v:'created_asc',t:'Oldest first'}].forEach(o=>{ const opt=document.createElement('option'); opt.value=o.v; opt.textContent=o.t; select.appendChild(opt); });
+        select.onchange = ()=>{
+          const area = document.getElementById('task-display-area');
+          if (area.dataset.lastTasks) {
+            const tasks = JSON.parse(area.dataset.lastTasks);
+            renderTasks(tasks);
+          }
+        };
+        container.appendChild(label); container.appendChild(select);
+      }
+
+      function renderStatusControls(){
+        const container = document.getElementById('status-filter-container');
+        container.innerHTML = '';
+        const btnAll = document.createElement('button'); btnAll.className='btn-filter interactive active'; btnAll.textContent='All'; btnAll.onclick=()=>{ setStatusView('all'); };
+        const btnNS = document.createElement('button'); btnNS.className='btn-filter interactive'; btnNS.textContent='Not Started'; btnNS.onclick=()=>{ setStatusView('not-started'); };
+        const btnIP = document.createElement('button'); btnIP.className='btn-filter interactive'; btnIP.textContent='In Progress'; btnIP.onclick=()=>{ setStatusView('in-progress'); };
+        const btnC = document.createElement('button'); btnC.className='btn-filter interactive'; btnC.textContent='Completed'; btnC.onclick=()=>{ setStatusView('completed'); };
+        container.appendChild(btnAll); container.appendChild(btnNS); container.appendChild(btnIP); container.appendChild(btnC);
+      }
+      function setStatusView(view){
+        const btns = document.querySelectorAll('#status-filter-container .btn-filter');
+        btns.forEach(b=>b.classList.remove('active'));
+        const map = { 'all':0, 'not-started':1, 'in-progress':2, 'completed':3 };
+        const idx = map[view] ?? 0; if (btns[idx]) btns[idx].classList.add('active');
+        const area = document.getElementById('task-display-area');
+        if (area.dataset.lastTasks) {
+          const tasks = JSON.parse(area.dataset.lastTasks);
+          renderTasks(tasks);
+        }
+      }
+
+    function renderTasks(data) {
+        const displayArea = document.getElementById('task-display-area');
+        // Get the current URL and remove any existing parameters
+        const currentUrl = window.location.href.split('?')[0];
+        const webAppUrl = currentUrl;
+
+        console.log('Rendering tasks data:', data);
+        console.log('Current URL:', window.location.href);
+        console.log('WebApp URL:', webAppUrl);
+
+        // Handle new data structure from getKanbanData()
+        let tasks = data;
+        if (data && data.tasks) {
+            tasks = data.tasks;
+        }
+
+        // Populate owners dropdown from tasks if server call didn't fill it
+        (function ensureOwnersDropdown(){
+            const sel = document.getElementById('owner-select');
+            const container = document.getElementById('owner-filter-container');
+            if (!container) return;
+            if (sel) return; // already rendered
+            if (!Array.isArray(tasks)) return;
+            const owners = Array.from(new Set(tasks.flatMap(t => String(getOwnersString(t) || '').split(',').map(s=>s.trim())).filter(Boolean))).sort();
+            renderOwners(owners);
+        })();
+
+        // Client-side defense-in-depth: hide leadership for regular users
+        const userRole = (data && data.userRole) ? data.userRole : 'regular';
+        if (Array.isArray(tasks) && userRole !== 'leadership') {
+            tasks = tasks.filter(t => !isLeadershipTask(t));
+        }
+
+        if (!tasks) {
+             displayArea.innerHTML = `<div class="error-message">Error: No data received from server. Please check console for details.</div>`;
+             // Also hide the filters loader if there are no tasks
+             document.getElementById('department-filter-container').innerHTML = '';
+             return;
+        }
+
+        if (tasks.error || tasks.length === 0) {
+             displayArea.innerHTML = `<div class="error-message">${tasks.error ? tasks.message : "No tasks found in the mission log."}</div>`;
+             // Also hide the filters loader if there are no tasks
+             document.getElementById('department-filter-container').innerHTML = '';
+             return;
+        }
+
+        // Add leadership filtering notice
+        if (userRole === 'regular') {
+            console.log('Regular user - leadership tasks filtered out');
+        }
+        
+                 // Status view filter
+         const statusLabel = (document.querySelector('#status-filter-container .btn-filter.active')?.textContent || 'All');
+         let baseTasks = tasks;
+         if (statusLabel === 'Not Started') baseTasks = tasks.filter(t=>String(t.status)==='Not Started');
+         else if (statusLabel === 'In Progress') baseTasks = tasks.filter(t=>String(t.status)==='In Progress');
+         else if (statusLabel === 'Completed') baseTasks = tasks.filter(t=>String(t.status)==='Completed');
+         console.log(`Rendering ${statusLabel} tasks: ${baseTasks.length}`);
+
+         // Sort tasks with special handling for completed tasks
+         const sortSel = document.getElementById('sort-select');
+         const dir = sortSel ? sortSel.value : 'created_desc';
+         const sorted = baseTasks.slice().sort((a,b)=>{
+             // ALWAYS put completed tasks at the bottom
+             if (a.status === 'Completed' && b.status !== 'Completed') {
+                 return 1; // a (completed) goes after b (active)
+             }
+             if (a.status !== 'Completed' && b.status === 'Completed') {
+                 return -1; // a (active) goes before b (completed)
+             }
+             
+             // If both are completed, sort by completion date (newest first)
+             if (a.status === 'Completed' && b.status === 'Completed') {
+                 const ad = a.dateCompleted ? new Date(a.dateCompleted).getTime() : (a.dateCreated ? new Date(a.dateCreated).getTime() : 0);
+                 const bd = b.dateCompleted ? new Date(b.dateCompleted).getTime() : (b.dateCreated ? new Date(b.dateCreated).getTime() : 0);
+                 return bd - ad; // Newest completed first
+             }
+             
+             // For active tasks, sort by creation date
+             const ad = a.dateCreated ? new Date(a.dateCreated).getTime() : 0;
+             const bd = b.dateCreated ? new Date(b.dateCreated).getTime() : 0;
+             return dir === 'created_asc' ? (ad - bd) : (bd - ad);
+         });
+         // cache last tasks for re-sort
+         displayArea.dataset.lastTasks = JSON.stringify(tasks);
+         
+         if (sorted.length === 0) {
+            displayArea.innerHTML = `<div class="error-message">No active tasks found. All tasks are completed!</div>`;
+            return;
+        }
+        
+                 displayArea.innerHTML = '';
+         sorted.forEach((task, index) => {
+            // Use the server-provided web app URL if available, otherwise fall back to client-side construction
+            let baseUrl = window.webAppUrl || window.location.href.split('?')[0];
+            const detailUrl = `${baseUrl}?page=task&id=${encodeURIComponent(task.taskID)}`;
+            
+            console.log(`Task ${index + 1}:`, task);
+            console.log(`Task ${index + 1} ownerDetails:`, task.ownerDetails);
+            console.log(`Generated detail URL for ${task.taskID}:`, detailUrl);
+            
+            // THIS IS THE FIX: This is the new avatar logic, now correctly placed.
+                         let ownerAvatarsHtml = (task.ownerDetails || []).map(owner => {
+                 console.log(`Owner avatar for ${owner.fullName}:`, owner.avatarUrl);
+                 return `<div class="owner-chip">
+                           <img src="${owner.avatarUrl || 'https://i.imgur.com/Vues1gP.png'}" 
+                                alt="${owner.fullName}" 
+                                class="owner-avatar" 
+                                title="${owner.fullName}"
+                                onerror="this.src='https://i.imgur.com/Vues1gP.png'; this.onerror=null;">
+                           <span class="owner-name">${owner.fullName}</span>
+                         </div>`;
+             }).join('');
+            
+            const ownersAttr = getOwnersString(task).toLowerCase();
+            const completedClass = (task.status === 'Completed') ? ' completed-dim' : '';
+            
+            // Department-specific styling
+            const departmentColors = {
+                'Ideas': '#f97316', // Orange
+                'Accounting': '#10b981', // Green
+                'Sales': '#3b82f6', // Blue
+                'Tech': '#8b5cf6', // Purple
+                'Marketing': '#ef4444', // Red
+                'HR': '#f59e0b', // Amber
+                'Customer Retention': '#06b6d4', // Cyan
+                'Swag': '#ec4899', // Pink
+                'Trade Shows': '#84cc16', // Lime
+                'Purchasing': '#6366f1' // Indigo
+            };
+            
+            const deptColor = departmentColors[task.department] || '#6b7280'; // Default gray
+            const deptClass = `dept-${task.department.toLowerCase().replace(/\s+/g, '-')}`;
+            
+            const taskCard = `
+                <a href="${detailUrl}" target="_blank" class="task-card-link">
+                    <div class="task-card${completedClass} ${deptClass}" data-department="${task.department}" data-milestone="${task.milestoneGroup || ''}" data-owners="${ownersAttr}" style="border-left: 4px solid ${deptColor};">
+                        <div class="task-header">
+                            <h3>${task.actionItem || 'Untitled Action'}</h3>
+                            <span class="task-id">[${task.taskID}]</span>
+                        </div>
+                        
+                        <!-- Department Flag -->
+                        <div class="department-flag" style="background-color: ${deptColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 8px;">
+                            ${task.department || 'Unknown'} Department
+                        </div>
+                        
+                        <!-- Priority and Impact Row -->
+                        <div class="task-meta-row">
+                            <div class="meta-item">
+                                <i class="fa-solid fa-star"></i>
+                                <span class="priority-badge priority-${task.priorityScore || 0}">Priority: ${task.priorityScore || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span class="impact-badge impact-${(task.timeSavingsImpact || '').toLowerCase()}">${task.timeSavingsImpact || 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Bar -->
+                        <div class="task-progress-container">
+                            <div class="task-progress-bar" style="width: ${task.progressPercentage || 0}%;"></div>
+                            <span class="task-progress-label">${task.progressPercentage || 0}% Complete</span>
+                        </div>
+                        
+                                                 <!-- Category, Milestone, and Created -->
+                         <div class="task-meta-row">
+                             <div class="meta-item">
+                                 <i class="fa-solid fa-tag"></i>
+                                 <span class="category-badge">${task.taskCategory || 'N/A'}</span>
+                             </div>
+                             <div class="meta-item">
+                                 <i class="fa-solid fa-flag"></i>
+                                 <span class="milestone-badge">${task.milestoneGroup || 'N/A'}</span>
+                             </div>
+                             <div class="meta-item">
+                                 <i class="fa-solid fa-calendar"></i>
+                                 <span class="created-badge">${task.dateCreated ? new Date(task.dateCreated).toLocaleDateString() : '—'}</span>
+                             </div>
+                         </div>
+                         
+                         <!-- Owners and Status -->
+                        <div class="task-footer-grid">
+                            <div class="meta-item owner-list">
+                                <i class="fa-solid fa-users"></i>
+                                <div><strong>Owner(s):</strong><div class="avatar-list">${ownerAvatarsHtml || 'Unassigned'}</div></div>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fa-solid fa-bars-progress"></i>
+                                <div><strong>Status:</strong> <span class="status-badge status-${(task.status || '').toLowerCase().replace(' ', '-')}">${task.status || 'N/A'}</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hours Info (if available) -->
+                        ${(task.predictedHours || task.actualHoursSpent) ? `
+                        <div class="task-hours-row">
+                            ${task.predictedHours ? `<div class="meta-item"><i class="fa-solid fa-clock"></i> <span>Predicted: ${task.predictedHours}h</span></div>` : ''}
+                            ${task.actualHoursSpent ? `<div class="meta-item"><i class="fa-solid fa-stopwatch"></i> <span>Actual: ${task.actualHoursSpent}h</span></div>` : ''}
+                        </div>
+                        ` : ''}
+                        
+                                                 <!-- Actions -->
+                         <div class="task-actions-row">
+                             ${task.status !== 'Completed' ? `
+                             <button onclick="startTask('${task.taskID}'); event.preventDefault();" class="complete-btn" style="background:#2563eb;">
+                                 <i class="fa-solid fa-play"></i> Start Task
+                             </button>
+                             <button onclick="markComplete('${task.taskID}'); event.preventDefault();" class="complete-btn">
+                                 <i class="fa-solid fa-check"></i> Mark Complete
+                             </button>` : ''}
+                         </div>
+                     </div>
+                 </a>
+             `;
+             displayArea.insertAdjacentHTML('beforeend', taskCard);
+        });
+    }
+
+    function filterTasks(department) {
+        // This function is essential for the filter buttons and has been restored.
+        const links = document.querySelectorAll('.task-card-link');
+        const filterButtons = document.querySelectorAll('.btn-filter');
+        const milestoneSelect = document.getElementById('milestone-select');
+        
+        // Reset milestone dropdown when department filter is used
+        if (milestoneSelect && department === 'All') {
+            milestoneSelect.value = 'All';
+        }
+        
+        filterButtons.forEach(button => {
+            button.classList.toggle('active', button.dataset.department === department);
+        });
+        const ownerSel = document.getElementById('owner-select');
+        const ownerVal = ownerSel ? ownerSel.value : 'All';
+        links.forEach(link => {
+            const card = link.querySelector('.task-card');
+            const deptMatch = department === 'All' || (card.dataset.department || '').toLowerCase() === (department || '').toLowerCase();
+            const ownersAttr = (card.dataset.owners || '').split(',').map(s=>s.trim().toLowerCase());
+            const ownerMatch = ownerVal === 'All' || ownersAttr.includes((ownerVal || '').toLowerCase());
+            link.style.display = (deptMatch && ownerMatch) ? 'block' : 'none';
+        });
+    }
+    
+    function filterTasksByMilestone(milestone) {
+        const links = document.querySelectorAll('.task-card-link');
+        const milestoneSelect = document.getElementById('milestone-select');
+        
+        // Update dropdown selection
+        if (milestoneSelect) {
+            milestoneSelect.value = milestone;
+        }
+        
+        links.forEach(link => {
+            const card = link.querySelector('.task-card');
+            if (milestone === 'All' || card.dataset.milestone === milestone) {
+                link.style.display = 'block';
+            } else {
+                link.style.display = 'none';
+            }
+        });
+    }
+    
+    function handleError(error) {
+        // This function is essential for debugging and has been restored.
+        console.error('Client-side error:', error);
+        const displayArea = document.getElementById('task-display-area');
+        displayArea.innerHTML = `<div class="error-message">An error occurred: ${error.message}</div>`;
+        document.getElementById('department-filter-container').innerHTML = '';
+    }
+    
+    // Test function to check data loading
+    function testDataLoading() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Data Loading Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                alert(`Data Loading Status:\n` +
+                      `Avatars: ${result.avatarCount}\n` +
+                      `Team Members: ${result.teamCount}\n` +
+                      `Tasks: ${result.taskCount}\n` +
+                      `Sample Avatar Keys: ${result.avatarKeys.join(', ')}\n` +
+                      `Sample Team Names: ${result.teamNames.join(', ')}\n` +
+                      `Sample Task Titles: ${result.taskTitles.join(', ')}`);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Test failed:', error);
+            alert('Test failed: ' + error.message);
+        }).testDataLoading();
+    }
+    
+    // Test team member matching
+    function testTeamMatching() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Team Matching Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                let message = 'Team Matching Results:\n\n';
+                result.forEach(task => {
+                    message += `Task: ${task.taskTitle}\n`;
+                    message += `Owners: ${task.owners.join(', ')}\n`;
+                    task.matches.forEach(match => {
+                        message += `  ${match.ownerName} → ${match.matchedTo} ${match.found ? '✓' : '✗'}\n`;
+                    });
+                    message += '\n';
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Team matching test failed:', error);
+            alert('Team matching test failed: ' + error.message);
+        }).debugTeamMatching();
+    }
+    
+    // Debug column headers
+    function debugHeaders() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Column Headers Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                alert(`Column Headers:\n${result.headers.join('\n')}\n\nOwner Column: ${result.ownerColumnName} (index: ${result.ownerColumnIndex})`);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Header debug failed:', error);
+            alert('Header debug failed: ' + error.message);
+        }).debugColumnHeaders();
+    }
+    
+    // Debug avatar mapping
+    function debugAvatars() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Avatar Mapping Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                let message = 'Avatar Mapping Results:\n\n';
+                message += `Avatar Map Keys (${result.avatarMapKeys.length}):\n${result.avatarMapKeys.join(', ')}\n\n`;
+                message += 'Team Member Avatar Status:\n';
+                result.teamMembers.forEach(member => {
+                    message += `${member.fullName}: ${member.hasAvatar ? '✓' : '✗'} (${member.avatarUrl})\n`;
+                });
+                message += '\nSample Avatar URLs:\n';
+                result.sampleAvatars.forEach(([name, url]) => {
+                    message += `${name}: ${url}\n`;
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Avatar debug failed:', error);
+            alert('Avatar debug failed: ' + error.message);
+        }).debugAvatarMapping();
+    }
+    
+    // Debug avatar sheet data
+    function debugAvatarSheet() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Avatar Sheet Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                let message = 'Avatar Sheet Data:\n\n';
+                message += `Total Rows: ${result.totalRows}\n`;
+                message += `Total Columns: ${result.totalColumns}\n\n`;
+                message += 'Headers:\n' + result.headers.join(', ') + '\n\n';
+                message += 'Sample Rows:\n';
+                result.sampleRows.forEach((row, index) => {
+                    message += `Row ${index}: ${row.join(' | ')}\n`;
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Avatar sheet debug failed:', error);
+            alert('Avatar sheet debug failed: ' + error.message);
+        }).debugAvatarSheet();
+    }
+    
+    // Debug Team Directory
+    function debugTeamDirectory() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Team Directory Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error + '\n\nAvailable Sheets:\n' + result.availableSheets.join('\n'));
+            } else {
+                let message = 'Team Directory Data:\n\n';
+                message += `Sheet Found: ${result.sheetFound}\n`;
+                message += `Total Rows: ${result.totalRows}\n`;
+                message += `Total Columns: ${result.totalColumns}\n\n`;
+                message += 'Headers:\n' + result.headers.join(', ') + '\n\n';
+                message += 'Sample Rows:\n';
+                result.sampleRows.forEach((row, index) => {
+                    message += `Row ${index}: ${row.join(' | ')}\n`;
+                });
+                message += '\nAvailable Sheets:\n' + result.availableSheets.join('\n');
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Team Directory debug failed:', error);
+            alert('Team Directory debug failed: ' + error.message);
+        }).debugTeamDirectory();
+    }
+    
+    // Debug task field mapping
+    function debugTaskFields() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Task Field Mapping Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error);
+            } else {
+                let message = 'Task Field Mapping:\n\n';
+                message += 'Original Headers:\n' + result.headers.join('\n') + '\n\n';
+                message += 'Field Mappings:\n';
+                result.mappings.forEach(mapping => {
+                    message += `"${mapping.originalHeader}" → "${mapping.mappedKey}" (column ${mapping.columnIndex})\n`;
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Task field mapping debug failed:', error);
+            alert('Task field mapping debug failed: ' + error.message);
+        }).debugTaskFieldMapping();
+    }
+    
+    // Debug task IDs
+    function debugTaskIds() {
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Task IDs Test Result:', result);
+            if (result.error) {
+                alert('Error: ' + result.error + '\n\nAvailable Headers:\n' + result.headers.join('\n'));
+            } else {
+                let message = 'Task IDs Debug:\n\n';
+                message += `Task ID Column: "${result.taskIdColumn}" (column ${result.taskIdColumnIndex})\n`;
+                message += `Total Tasks: ${result.totalTasks}\n\n`;
+                message += 'Sample Task IDs:\n';
+                result.sampleTaskIds.forEach(item => {
+                    message += `Row ${item.row}: "${item.taskId}" - "${item.actionItem}"\n`;
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Task IDs debug failed:', error);
+            alert('Task IDs debug failed: ' + error.message);
+        }).debugTaskIds();
+    }
+    
+    // Test task detail template
+    function testTaskDetailTemplate() {
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.success) {
+                    alert('Task detail template test successful!\nHTML Length: ' + result.htmlLength + '\nTemplate can be rendered properly.');
+                } else {
+                    alert('Task detail template test failed:\n' + result.error);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error testing task detail template: ' + error.message);
+            })
+            .testTaskDetailTemplate();
+    }
+
+    function debugSpecificTaskId() {
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.error) {
+                    alert('Debug error: ' + result.error);
+                } else {
+                    let message = `Debug Results for TAL-002:\n\n`;
+                    message += `Total tasks in sheet: ${result.totalTasks}\n`;
+                    message += `Matches found: ${result.matches.length}\n\n`;
+                    
+                    if (result.matches.length > 0) {
+                        message += 'Matches:\n';
+                        result.matches.forEach(match => {
+                            message += `- ${match.type} match: "${match.taskId}" (Row ${match.row})\n`;
+                        });
+                    } else {
+                        message += 'No matches found!\n';
+                    }
+                    
+                    message += `\nSample task IDs: ${result.sampleTaskIds.join(', ')}`;
+                    alert(message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error debugging task ID: ' + error.message);
+            })
+            .debugSpecificTaskId('TAL-002');
+    }
+
+    function debugTeamEmails() {
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.error) {
+                    alert('Debug error: ' + result.error);
+                } else {
+                    let message = `Team Email Debug Results:\n\n`;
+                    message += `Total team members: ${result.totalMembers}\n`;
+                    message += `Members with emails: ${result.membersWithEmails}\n`;
+                    message += `Members without emails: ${result.membersWithoutEmails}\n\n`;
+                    
+                    message += 'Sample members:\n';
+                    result.sampleMembers.forEach((member, index) => {
+                        message += `${index + 1}. ${member.fullName} - Email: ${member.email || 'MISSING'}\n`;
+                    });
+                    
+                    alert(message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error debugging team emails: ' + error.message);
+            })
+            .debugTeamEmails();
+    }
+
+    function testNotificationForTask() {
+        // Prompt user for task ID
+        const taskId = prompt('Enter a task ID to test notification process (e.g., BI-001):');
+        if (!taskId) return;
+        
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.error) {
+                    alert('Test error: ' + result.error);
+                } else {
+                    let message = `Notification Process Test Results:\n\n`;
+                    message += `Task: ${result.taskName}\n`;
+                    message += `Task ID: ${result.taskId}\n`;
+                    message += `Assigned to: ${result.owners}\n\n`;
+                    message += `Found ${result.foundMembers.length} team members:\n`;
+                    
+                    result.foundMembers.forEach((member, index) => {
+                        message += `${index + 1}. ${member.name} - Email: ${member.email || 'MISSING'}\n`;
+                    });
+                    
+                    message += `\nMembers with emails: ${result.membersWithEmails}`;
+                    alert(message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error testing notification: ' + error.message);
+            })
+            .testNotificationProcess(taskId);
+    }
+
+    function showAllTeamEmails() {
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                } else {
+                    let message = `📋 ALL TEAM MEMBERS AND EMAILS\n\n`;
+                    message += `Total team members: ${result.totalMembers}\n`;
+                    message += `Members with emails: ${result.membersWithEmails}\n`;
+                    message += `Members without emails: ${result.membersWithoutEmails}\n\n`;
+                    
+                    message += `📧 MEMBERS WITH EMAILS:\n`;
+                    result.membersWithEmailsList.forEach((member, index) => {
+                        message += `${index + 1}. ${member.fullName}\n   Email: ${member.email}\n   Department: ${member.department}\n\n`;
+                    });
+                    
+                    if (result.membersWithoutEmailsList.length > 0) {
+                        message += `❌ MEMBERS MISSING EMAILS:\n`;
+                        result.membersWithoutEmailsList.forEach((member, index) => {
+                            message += `${index + 1}. ${member.fullName}\n   Department: ${member.department}\n\n`;
+                        });
+                    }
+                    
+                    alert(message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error getting team emails: ' + error.message);
+            })
+            .getAllTeamEmails();
+    }
+
+    function getUpdateInstructions() {
+        google.script.run
+            .withSuccessHandler(function(result) {
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                } else {
+                    let message = `🔧 FIX MISSING EMAILS\n\n`;
+                    message += `Total team members: ${result.totalMembers}\n`;
+                    message += `Members needing emails: ${result.membersNeedingEmails}\n\n`;
+                    
+                    message += `📝 UPDATE INSTRUCTIONS:\n`;
+                    message += result.instructions;
+                    
+                    message += `\n\n📋 TEAM MEMBERS NEEDING EMAILS:\n`;
+                    result.updateList.filter(m => m.needsUpdate).forEach((member, index) => {
+                        message += `${index + 1}. ${member.fullName}\n`;
+                    });
+                    
+                    alert(message);
+                }
+            })
+            .withFailureHandler(function(error) {
+                alert('Error getting update instructions: ' + error.message);
+            })
+            .getAvatarSheetUpdateInstructions();
+    }
+    
+    // Start task orchestrator
+    function startTask(taskId) {
+        google.script.run.withSuccessHandler(function(result){
+            if (result.status === 'Success') {
+                alert('Task started: status moved to In Progress, calendar event and Google Task created, and notification sent.');
+                location.reload();
+            } else {
+                alert('Start failed: ' + result.message);
+            }
+        }).withFailureHandler(function(error){
+            alert('Start failed: ' + error.message);
+        }).startTask(taskId);
+    }
+
+    // Mark task as complete
+    function markComplete(taskId) {
+        if (confirm('Mark this task as complete?')) {
+            google.script.run.withSuccessHandler(function(result) {
+                if (result.status === 'Success') {
+                    alert('Task marked as complete!');
+                    // Refresh just the data instead of the entire page
+                    console.log('Task completed successfully, refreshing data...');
+                    setTimeout(() => {
+                        fetchData();
+                    }, 1000); // Wait 1 second for the database to update
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            }).withFailureHandler(function(error) {
+                alert('Error marking task complete: ' + error.message);
+            }).markTaskComplete(taskId);
+        }
+    }
+    
+    // Force refresh all data and show comprehensive debugging
+    function forceRefreshData() {
+        console.log('Forcing data refresh...');
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Force refresh result:', result);
+            if (result.error) {
+                alert('Error during refresh: ' + result.error + '\n\nStack: ' + result.stack);
+            } else {
+                let message = '🔄 FRESH DATA LOADED!\n\n';
+                message += `Timestamp: ${result.timestamp}\n`;
+                message += `Sheet Rows: ${result.totalRows}\n`;
+                message += `Team Members: ${result.teamMembers}\n`;
+                message += `Members with Emails: ${result.membersWithEmails}\n\n`;
+                message += `Headers: ${result.headers.join(', ')}\n\n`;
+                message += 'Sample Data:\n';
+                result.sampleData.forEach((row, index) => {
+                    message += `Row ${index}: ${row.join(' | ')}\n`;
+                });
+                alert(message);
+                
+                // Refresh the page to show updated data
+                location.reload();
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Force refresh failed:', error);
+            alert('Force refresh failed: ' + error.message);
+        }).forceDataRefresh();
+    }
+    
+    // Test avatar image loading
+    function testAvatarImages() {
+        console.log('Testing avatar images...');
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Avatar test result:', result);
+            if (result.error) {
+                alert('Avatar test error: ' + result.error);
+            } else {
+                let message = '🖼️ AVATAR TEST RESULTS\n\n';
+                message += `Total avatars: ${result.totalAvatars}\n`;
+                message += `Unassigned URL: ${result.unassignedUrl}\n\n`;
+                message += 'Sample avatars:\n';
+                result.sampleAvatars.forEach((avatar, index) => {
+                    message += `${index + 1}. ${avatar.name}: ${avatar.url}\n`;
+                });
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Avatar test failed:', error);
+            alert('Avatar test failed: ' + error.message);
+        }).testAvatarLoading();
+    }
+    
+    // Debug the entire avatar processing pipeline
+    function debugAvatarPipeline() {
+        console.log('Debugging avatar pipeline...');
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Avatar pipeline debug result:', result);
+            if (result.error) {
+                alert('Avatar pipeline debug error: ' + result.error + '\n\nStack: ' + result.stack);
+            } else {
+                let message = '🔍 AVATAR PIPELINE DEBUG RESULTS\n\n';
+                message += `Avatar Map Entries: ${result.avatarMapEntries}\n`;
+                message += `Team Data Entries: ${result.teamDataEntries}\n`;
+                message += `Task Count: ${result.taskCount}\n\n`;
+                
+                message += 'Sample Avatars:\n';
+                result.sampleAvatars.forEach((avatar, index) => {
+                    message += `${index + 1}. ${avatar.name}: ${avatar.url}\n`;
+                });
+                
+                message += '\nSample Tasks:\n';
+                result.sampleTasks.forEach((task, index) => {
+                    message += `Task ${index + 1}: ${task.actionItem}\n`;
+                    task.owners.forEach((owner, ownerIndex) => {
+                        message += `  Owner ${ownerIndex + 1}: ${owner.name} - ${owner.avatar}\n`;
+                    });
+                });
+                
+                alert(message);
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Avatar pipeline debug failed:', error);
+            alert('Avatar pipeline debug failed: ' + error.message);
+        }).debugAvatarPipeline();
+    }
+    
+    // Clear all caches and force fresh data
+    function clearAllCaches() {
+        console.log('Clearing all caches...');
+        google.script.run.withSuccessHandler(function(result) {
+            console.log('Cache clear result:', result);
+            if (result.error) {
+                alert('Cache clear error: ' + result.error);
+            } else {
+                let message = '🧹 CACHE CLEAR RESULTS\n\n';
+                message += result.message + '\n\n';
+                message += `Avatar Map Entries: ${result.avatarMapEntries}\n`;
+                message += `Team Data Entries: ${result.teamDataEntries}\n`;
+                message += `Task Count: ${result.taskCount}\n`;
+                alert(message);
+                
+                // Refresh the page to show updated data
+                location.reload();
+            }
+        }).withFailureHandler(function(error) {
+            console.error('Cache clear failed:', error);
+            alert('Cache clear failed: ' + error.message);
+        }).forceClearAllCaches();
+    }
+</script>

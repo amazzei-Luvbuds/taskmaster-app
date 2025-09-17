@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <?!= include('style.css.html'); ?>
+</head>
+<body class="detail-body">
+    
+    <div class="task-header-bar">
+        <h1><?= task.taskID ?>: <?= task.actionItem ?></h1>
+        <div style="display: flex; gap: 1rem;">
+             <span class="status-badge"><?= task.status ?></span>
+             <span class="priority-badge"><?= task.taskCategory ?></span>
+        </div>
+    </div>
+    
+    <div class="detail-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="detail-card">
+                <h3>Project Goal</h3>
+                <p><?= plan.projectGoal ?></p>
+            </div>
+            <div class="detail-card">
+                <h3>Key Details</h3>
+                <ul>
+                    <li><strong>Department:</strong> <?= task.department ?></li>
+                    <li><strong>Priority:</strong> <span class="priority-badge"><?= task.priorityScore ?></span></li>
+                </ul>
+            </div>
+             <div class="detail-card">
+                <h3>Expected Benefits</h3>
+                <ul>
+                  <? for (const benefit of plan.expectedBenefits) { ?>
+                    <li class="check-item"><span><?= benefit ?></span></li>
+                  <? } ?>
+                </ul>
+            </div>
+            <div class="detail-card">
+                <h3>Assigned Team</h3>
+                <div id="team-list">
+                  <? if (task.ownerDetails && task.ownerDetails.length > 0 && task.ownerDetails[0].fullName) { ?>
+                    <? for (const member of task.ownerDetails) { ?>
+                      <div class="team-member-card">
+                        <img src="<?= member.avatarUrl ?>" class="team-avatar">
+                        <div>
+                          <div class="team-name"><?= member.fullName ?></div>
+                          <div class="team-contact"><?= member.email ?> | <?= member.phone ?></div>
+                        </div>
+                      </div>
+                    <? } ?>
+                  <? } else { ?>
+                    <p>No team members assigned.</p>
+                  <? } ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="detail-card control-panel">
+                <h3>Actions & Controls</h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Change Status</label>
+                        <select id="status-select" onchange="handleAction('CHANGE_STATUS', this.value)">
+                            <option value="Not Started" <?= task.status === 'Not Started' ? 'selected' : '' ?>>Not Started</option>
+                            <option value="In Progress" <?= task.status === 'In Progress' ? 'selected' : '' ?>>In Progress</option>
+                            <option value="Blocked" <?= task.status === 'Blocked' ? 'selected' : '' ?>>Blocked</option>
+                            <option value="Completed" <?= task.status === 'Completed' ? 'selected' : '' ?>>Completed</option>
+                            <option value="Cancelled" <?= task.status === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Assign Team (Cmd/Ctrl to select multiple)</label>
+                        <select id="team-select" multiple>
+                            <? for (const member of teamDirectory) { ?>
+                                <option value="<?= member.fullName ?>" <?= (task.owners || '').includes(member.fullName) ? 'selected' : '' ?>><?= member.fullName ?></option>
+                            <? } ?>
+                        </select>
+                        <button class="btn-small" onclick="handleAction('ASSIGN_TEAM')">Assign</button>
+                    </div>
+                    <div class="control-group">
+                        <label>Add Team Member</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <select id="add-member-select">
+                                <? for (const member of teamDirectory) { ?>
+                                    <option value="<?= member.fullName ?>"><?= member.fullName ?></option>
+                                <? } ?>
+                            </select>
+                            <button class="btn-small" onclick="addTeamMember()">Add Member</button>
+                        </div>
+                        <div style="font-size:12px; opacity:.7; margin-top:6px;">Adds to current owners without removing anyone.</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Set Deadline</label>
+                        <input type="date" id="due-date-input" value="<?= task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '' ?>">
+                        <button class="btn-small" onclick="handleAction('SET_DEADLINE')">Set Date</button>
+                    </div>
+                    <div class="control-group other-actions">
+                        <button class="btn-small" onclick="handleAction('START_PROJECT')">Start Project</button>
+                        <button class="btn-small" onclick="handleAction('FORCE_COMPLETE')">Force Complete</button>
+                        <button class="btn-small danger" onclick="handleAction('CANCEL_PROJECT')">Cancel</button>
+                        <button class="btn-small danger" onclick="handleAction('DELETE_PROJECT')">Delete</button>
+                    </div>
+                    <div class="control-group accountability-actions">
+                        <button class="btn-small" onclick="handleAction('CREATE_CALENDAR_EVENT')" style="background: #28a745; color: white;">
+                            📅 Book 1 Hour
+                        </button>
+                        <button class="btn-small" onclick="handleAction('SEND_NOTIFICATION')" style="background: #17a2b8; color: white;">
+                            📧 Send Notification
+                        </button>
+                        <button class="btn-small" onclick="testNotification()" style="background: #6c757d; color: white;">
+                            🧪 Test Notification
+                        </button>
+                        <button class="btn-small" onclick="createAccountabilityTask()" style="background: #28a745; color: white;">
+                            📋 Create Google Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-card" id="notes-card">
+                <h3>Notes</h3>
+                <div id="notes-view" style="white-space:pre-wrap; border:1px solid #374151; background:rgba(0,0,0,0.3); padding:10px; border-radius:6px; min-height:60px; margin-bottom:10px;">
+                    <?= (task.notesLog || task['Notes_Log'] || 'No notes yet.') ?>
+                </div>
+                <textarea id="notes-input" rows="3" placeholder="Add a note for teammates..." style="width:100%; background:#0f172a; color:#e5e7eb; border:1px solid #374151; border-radius:6px; padding:8px;"></textarea>
+                <div class="form-actions">
+                    <button class="btn-small" onclick="addNote()">Save Note</button>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <h3>Transcript Summary</h3>
+                <p><?= task.transcriptSummary || 'No summary available' ?></p>
+                <? if (task.transcriptResources) { ?>
+                  <h4>Resources</h4>
+                  <pre style="white-space:pre-wrap;"><?= task.transcriptResources ?></pre>
+                <? } ?>
+                <? if (task.transcriptMentions) { ?>
+                  <h4>People Mentioned</h4>
+                  <p><?= task.transcriptMentions ?></p>
+                <? } ?>
+            </div>
+
+            <!-- Subtasks Card -->
+            <div class="detail-card" id="subtasks-card">
+                <h3>Subtasks</h3>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                    <label>Mode:</label>
+                    <select id="subtasks-mode" onchange="onChangeMode(this.value)">
+                        <option value="Auto">Auto</option>
+                        <option value="Manual">Manual</option>
+                    </select>
+                    <button class="btn-small" onclick="generateFromPlan()">Generate from Plan</button>
+                    <div id="subtasks-progress" style="margin-left:auto; font-size:12px; opacity:.8;">Progress: --%</div>
+                </div>
+                <div id="subtasks-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <input id="new-subtask-title" placeholder="New subtask title" style="flex:1;">
+                    <input id="new-subtask-weight" type="number" min="1" value="1" style="width:80px;">
+                    <button class="btn-small" onclick="addSubtaskUI()">Add</button>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h3>Key Milestones</h3>
+                <? if (plan.milestonePlan && typeof plan.milestonePlan === 'object') { ?>
+                    <? if (plan.milestonePlan.title) { ?>
+                        <h4><?= plan.milestonePlan.title ?></h4>
+                    <? } ?>
+                    <? if (plan.milestonePlan.description) { ?>
+                        <p><?= plan.milestonePlan.description ?></p>
+                    <? } ?>
+                <? } else { ?>
+                    <p>Milestone details will be generated based on the project plan.</p>
+                    <? if (plan.milestonePlan) { ?>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 10px;">
+                            Debug: <?= JSON.stringify(plan.milestonePlan) ?>
+                        </p>
+                    <? } ?>
+                <? } ?>
+            </div>
+            <div class="detail-card">
+                <h3>Data Integrity Plan</h3>
+                <? for (const item of plan.dataIntegrityPlan) { ?>
+                  <p><strong><?= Object.keys(item)[0] ?>:</strong> <?= Object.values(item)[0] ?></p>
+                <? } ?>
+            </div>
+            <div class="detail-card">
+                <h3>Implementation Plan</h3>
+                 <? for (let i = 0; i < plan.implementationPlan.length; i++) { ?>
+                   <div class="step-item">
+                      <div class="step-number"><?= i + 1 ?></div>
+                      <div>
+                          <strong><?= Object.keys(plan.implementationPlan[i])[0] ?></strong>
+                          <p><?= Object.values(plan.implementationPlan[i])[0] ?></p>
+                      </div>
+                   </div>
+                 <? } ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wrap templated JSON in a string for IDE parsers, then JSON.parse at runtime
+        const INITIAL_OWNERS = JSON.parse('<?= JSON.stringify(task.owners || "") ?>');
+        const BASE_URL = '<?= getWebAppUrl() ?>';
+        function handleAction(action, value) {
+            let payload = {};
+            if (action === 'DELETE_PROJECT') {
+                if (!confirm('Are you sure you want to permanently delete this task?')) return;
+                // Use a dedicated success handler that navigates to a safe page (no iframe/top redirects)
+                google.script.run
+                  .withSuccessHandler(function(resp){
+                    if (resp && resp.status === 'Success') {
+                      window.location.href = BASE_URL + '?page=kanban';
+                    } else {
+                      alert('Delete failed: ' + (resp && resp.message ? resp.message : 'Unknown error'));
+                    }
+                  })
+                  .withFailureHandler(onError)
+                  .updateTaskAction('<?= task.taskID ?>', action, {});
+                return;
+            }
+            if (action === 'ASSIGN_TEAM') {
+                payload.teamMembers = Array.from(document.getElementById('team-select').selectedOptions).map(opt => opt.value);
+            }
+            if (action === 'SET_DEADLINE') {
+                payload.dueDate = document.getElementById('due-date-input').value;
+            }
+            if (action === 'CHANGE_STATUS') {
+                google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onError).updateTaskStatus('<?= task.taskID ?>', value);
+                return;
+            }
+            if (action === 'CREATE_CALENDAR_EVENT') {
+                const taskData = {
+                    taskID: '<?= task.taskID ?>',
+                    actionItem: '<?= task.actionItem ?>',
+                    department: '<?= task.department ?>',
+                    priorityScore: '<?= task.priorityScore ?>',
+                    status: '<?= task.status ?>',
+                    owners: '<?= task.owners ?>',
+                    progressPercentage: '<?= task.progressPercentage ?>'
+                };
+                google.script.run.withSuccessHandler(function(result) {
+                    if (result.success) {
+                        alert('Calendar event created successfully!\nEvent URL: ' + result.eventUrl);
+                    } else {
+                        alert('Error creating calendar event: ' + result.error);
+                    }
+                }).withFailureHandler(onError).createTaskCalendarEvent(taskData);
+                return;
+            }
+            if (action === 'SEND_NOTIFICATION') {
+                const taskData = {
+                    taskID: '<?= task.taskID ?>',
+                    actionItem: '<?= task.actionItem ?>',
+                    department: '<?= task.department ?>',
+                    priorityScore: '<?= task.priorityScore ?>',
+                    status: '<?= task.status ?>',
+                    owners: '<?= task.owners ?>',
+                    progressPercentage: '<?= task.progressPercentage ?>',
+                    ownerDetails: '<?= task.ownerDetails ? JSON.stringify(task.ownerDetails) : "[]" ?>'
+                };
+                google.script.run.withSuccessHandler(function(result) {
+                    if (result.success) {
+                        alert('Notification sent successfully!');
+                    } else {
+                        alert('Error sending notification: ' + result.error);
+                    }
+                }).withFailureHandler(onError).sendTaskNotificationPublic(taskData);
+                return;
+            }
+            google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onError).updateTaskAction('<?= task.taskID ?>', action, payload);
+        }
+        function addTeamMember() {
+            const sel = document.getElementById('add-member-select');
+            const name = sel && sel.value ? String(sel.value).trim() : '';
+            if (!name) { alert('Select a team member to add.'); return; }
+            google.script.run
+              .withSuccessHandler(onSuccess)
+              .withFailureHandler(onError)
+              .appendOwner('<?= task.taskID ?>', name);
+        }
+        function onSuccess(response) {
+            if(response.status === 'Success') {
+                // Hard redirect to the canonical Web App URL for this task (bypasses any odd iframe state)
+                var target = BASE_URL + '?page=task&id=' + encodeURIComponent('<?= task.taskID ?>') + '&safe=1';
+                window.location.href = target;
+            } else {
+                alert('Error: ' + response.message);
+            }
+        }
+        function onError(error) {
+            alert('An error occurred: ' + error.message);
+        }
+        
+        function testNotification() {
+            const taskId = '<?= task.taskID ?>';
+            google.script.run.withSuccessHandler(function(result) {
+                console.log('Test notification result:', result);
+                if (result.error) {
+                    alert('Test notification error: ' + result.error);
+                } else {
+                    let message = '🧪 TEST NOTIFICATION RESULTS\n\n';
+                    message += `Task: ${result.taskName}\n`;
+                    message += `Task ID: ${result.taskId}\n`;
+                    message += `Owners: ${result.owners || 'None'}\n`;
+                    message += `Owner Details: ${result.ownerDetails ? result.ownerDetails.length + ' members' : 'None'}\n\n`;
+                    message += `Notification Result: ${result.notificationResult.success ? 'SUCCESS' : 'FAILED'}\n`;
+                    if (result.notificationResult.success) {
+                        message += `Emails Sent: ${result.notificationResult.emailsSent}\n`;
+                        message += `Message: ${result.notificationResult.message}`;
+                    } else {
+                        message += `Error: ${result.notificationResult.error}`;
+                    }
+                    alert(message);
+                }
+            }).withFailureHandler(function(error) {
+                alert('Test notification failed: ' + error.message);
+            }).testNotificationForTask(taskId);
+        }
+        
+        function createAccountabilityTask() {
+            const taskData = {
+                taskID: '<?= task.taskID ?>',
+                actionItem: '<?= task.actionItem ?>',
+                department: '<?= task.department ?>',
+                priorityScore: '<?= task.priorityScore ?>',
+                status: '<?= task.status ?>',
+                progressPercentage: '<?= task.progressPercentage ?>'
+            };
+            // Pre-open a tab to avoid popup blockers, then navigate it in the callback
+            const pre = window.open('about:blank', '_blank');
+            const fallbackUrl = 'https://tasks.google.com/';
+            
+            google.script.run.withSuccessHandler(function(result) {
+                console.log('Google Task creation result:', result);
+                const url = (result && (result.tasksUrl || result.googleTasksLink)) || fallbackUrl;
+                if (pre && !pre.closed) {
+                    pre.location.replace(url);
+                    try { pre.focus(); } catch (e) {}
+                } else {
+                    window.open(url, '_blank');
+                }
+                alert('📋 Google Task created in your Tasks list');
+            }).withFailureHandler(function(error) {
+                if (pre && !pre.closed) try { pre.close(); } catch (e) {}
+                alert('Google Task creation failed: ' + error.message);
+            }).createGoogleTask(taskData);
+        }
+
+        // === Subtasks UI ===
+        function loadSubtasks(){
+            google.script.run.withSuccessHandler(function(state){
+                document.getElementById('subtasks-mode').value = state.mode || 'Auto';
+                renderSubtasks(state.subtasks);
+                document.getElementById('subtasks-progress').textContent = 'Progress: ' + (state.progress ?? '--') + '%';
+            }).withFailureHandler(onError).getSubtasks('<?= task.taskID ?>');
+        }
+        function renderSubtasks(list){
+            const cont = document.getElementById('subtasks-list');
+            if (!list || list.length === 0){
+                cont.innerHTML = '<em>No subtasks yet.</em>';
+                return;
+            }
+            cont.innerHTML = '';
+            list.forEach(function(it){
+                const row = document.createElement('div');
+                row.style.display = 'flex'; row.style.gap = '8px'; row.style.alignItems = 'center';
+                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!it.done; cb.onchange = function(){ toggleSubtaskUI(it.id, cb.checked); };
+                const title = document.createElement('span'); title.textContent = it.title + (it.weight && it.weight !== 1 ? ` (w:${it.weight})` : '');
+                title.style.flex = '1'; if (cb.checked) title.style.opacity = '.6';
+                const del = document.createElement('button'); del.className = 'btn-small danger'; del.textContent = 'Remove'; del.onclick = function(){ removeSubtaskUI(it.id); };
+                row.appendChild(cb); row.appendChild(title); row.appendChild(del);
+                cont.appendChild(row);
+            });
+        }
+        function addSubtaskUI(){
+            const title = document.getElementById('new-subtask-title').value.trim();
+            const weight = parseInt(document.getElementById('new-subtask-weight').value, 10) || 1;
+            if (!title) { alert('Enter a subtask title'); return; }
+            google.script.run.withSuccessHandler(function(){
+                document.getElementById('new-subtask-title').value = '';
+                document.getElementById('new-subtask-weight').value = 1;
+                loadSubtasks();
+            }).withFailureHandler(onError).addSubtask('<?= task.taskID ?>', title, weight);
+        }
+        function toggleSubtaskUI(id, done){
+            google.script.run.withSuccessHandler(function(){ loadSubtasks(); }).withFailureHandler(onError).toggleSubtask('<?= task.taskID ?>', id, done);
+        }
+        function removeSubtaskUI(id){
+            if (!confirm('Remove this subtask?')) return;
+            google.script.run.withSuccessHandler(function(){ loadSubtasks(); }).withFailureHandler(onError).removeSubtask('<?= task.taskID ?>', id);
+        }
+        function onChangeMode(mode){
+            google.script.run.withSuccessHandler(function(){ loadSubtasks(); }).withFailureHandler(onError).setProgressMode('<?= task.taskID ?>', mode);
+        }
+        function generateFromPlan(){
+            google.script.run.withSuccessHandler(function(res){
+                if (!res || res.ok === false) alert('Failed: ' + (res && res.error ? res.error : 'unknown'));
+                loadSubtasks();
+            }).withFailureHandler(onError).generateSubtasksFromPlan('<?= task.taskID ?>');
+        }
+
+        // Initial load
+        loadSubtasks();
+
+        // === Notes ===
+        function addNote(){
+            const text = (document.getElementById('notes-input').value || '').trim();
+            if (!text){ alert('Please enter a note.'); return; }
+            google.script.run
+              .withSuccessHandler(function(res){
+                  if (!res || res.status !== 'Success'){ alert('Failed to save note: ' + (res && res.message ? res.message : 'Unknown')); return; }
+                  const view = document.getElementById('notes-view');
+                  const entry = res.note || text;
+                  const current = view.textContent && view.textContent.trim() !== 'No notes yet.' ? view.textContent : '';
+                  view.textContent = current ? (current + '\n' + entry) : entry;
+                  document.getElementById('notes-input').value='';
+              })
+              .withFailureHandler(function(err){ alert('Failed to save note: ' + err.message); })
+              .appendTaskNote('<?= task.taskID ?>', text);
+        }
+    </script>
+</body>
+</html>

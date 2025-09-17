@@ -1,0 +1,251 @@
+<style>
+    /* ===================================================================================
+    // |   LUVBUDS PROJECT DASHBOARD - MASTER STYLESHEET V7.1                           |
+    // |   - Contains all styles for all pages and components.                          |
+    // =================================================================================== */
+    
+    /* --- PART 1: BASE STYLES & VARIABLES --- */
+    :root {
+      --primary-color: #ff00ff;
+      --secondary-color: #00ffff;
+      --bg-color: #0a0a14;
+      --text-color: #e0e0e0;
+      --card-bg-color: rgba(20, 20, 40, 0.7);
+      --border-color: #334;
+      --glow-color-primary: rgba(255, 0, 255, 0.7);
+      --glow-color-secondary: rgba(0, 255, 255, 0.7);
+    }
+    body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Exo 2', sans-serif; margin: 0; padding: 0; line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .main-header { padding: 1rem 0; background: rgba(10, 10, 20, 0.8); backdrop-filter: blur(5px); border-bottom: 1px solid var(--primary-color); }
+    .navbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .navbar-brand .navbar-logo { max-height: 50px; }
+    .interactive { text-decoration: none; color: var(--secondary-color); transition: all 0.3s ease; }
+    .interactive:hover { color: var(--primary-color); text-shadow: 0 0 10px var(--glow-color-primary); }
+    .btn { padding: 10px 20px; border: 1px solid var(--secondary-color); background: transparent; cursor: pointer; font-family: 'Orbitron', sans-serif; text-transform: uppercase;}
+    .btn.active, .btn:hover { background: var(--secondary-color); color: var(--bg-color); box-shadow: 0 0 15px var(--glow-color-secondary); }
+    .main-footer-bottom { text-align: center; padding: 20px 0; border-top: 1px solid #333; margin-top: 40px; font-family: 'Orbitron';}
+    .section-tasks { padding: 4rem 0; }
+    .section-title h2 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; text-align: center; margin-bottom: 2rem; position: relative; }
+    .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); overflow: hidden; }
+    .glitch::before { left: 2px; text-shadow: -2px 0 var(--primary-color); animation: glitch-anim 5s infinite linear alternate-reverse; }
+    .glitch::after { left: -2px; text-shadow: -2px 0 var(--secondary-color); animation: glitch-anim-2 5s infinite linear alternate-reverse; }
+    @keyframes glitch-anim { 0% { clip: rect(42px, 9999px, 44px, 0); } 100% { clip: rect(20px, 9999px, 92px, 0); } }
+    @keyframes glitch-anim-2 { 0% { clip: rect(42px, 9999px, 44px, 0); } 100% { clip: rect(80px, 9999px, 102px, 0); } }
+    
+    /* --- PART 2: MAIN DASHBOARD STYLES --- */
+    .department-filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 40px; }
+    .btn-filter { padding: 10px 20px; font-family: 'Orbitron', sans-serif; background: transparent; border: 1px solid var(--secondary-color); color: var(--secondary-color); cursor: pointer; transition: all 0.3s ease; }
+    .btn-filter.active, .btn-filter:hover { background: var(--secondary-color); color: var(--bg-color); box-shadow: 0 0 15px var(--glow-color-secondary); }
+    #task-display-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 25px; }
+    .task-card { background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; transition: all 0.3s ease; height: 100%; box-sizing: border-box;}
+    .task-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: 0 0 20px rgba(255, 0, 255, 0.2); }
+    .task-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 15px; }
+    .task-header h3 { margin: 0; font-family: 'Orbitron', sans-serif; color: var(--text-color); font-size: 1.3rem; line-height: 1.2; }
+    .task-id { font-size: 0.8rem; color: var(--secondary-color); opacity: 0.7; white-space: nowrap; margin-left: 10px; }
+    .task-progress-container { width: 100%; background-color: rgba(0, 0, 0, 0.3); border-radius: 15px; height: 20px; margin-bottom: 20px; position: relative; border: 1px solid var(--border-color); overflow: hidden; }
+    .task-progress-bar { background: linear-gradient(90deg, var(--secondary-color), var(--primary-color)); height: 100%; border-radius: 15px; transition: width 0.5s ease-in-out; }
+    .task-progress-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-weight: bold; font-size: 0.8rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+    .task-footer-grid { display: grid; grid-template-columns: 1fr; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: auto; }
+    .meta-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; }
+    .meta-item i { color: var(--primary-color); font-size: 1rem; margin-top: 2px; text-align: center; width: 20px; }
+    .meta-item strong { color: var(--text-color); }
+    .status-badge, .priority-badge { padding: 3px 8px; border-radius: 5px; font-weight: 600; font-size: 0.8rem; color: #fff; display: inline-block; }
+    .status-badge.in-progress { background-color: #ffc107; color: #000; }
+    .status-badge.completed { background-color: #28a745; color: #fff; }
+    .status-badge.not-started { background-color: #6c757d; color: #fff; }
+    .status-badge.blocked { background-color: #dc3545; color: #fff; }
+    .status-badge.cancelled { background-color: #343a40; color: #fff; }
+    .priority-badge.critical { background-color: var(--primary-color); color: #fff; text-shadow: 0 0 5px #000; }
+    .priority-badge.high { background-color: #dc3545; color: #fff; }
+    .priority-badge.medium { background-color: #ffc107; }
+    .priority-badge.low { background-color: #17a2b8; color: #fff; }
+    .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 10, 20, 0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; color: var(--secondary-color); font-family: 'Orbitron'; font-size: 1.5rem; }
+    .error-message { text-align: center; color: #dc3545; background: rgba(220, 53, 69, 0.1); padding: 20px; border: 1px solid #dc3545; }
+    .task-card-link { text-decoration: none; color: inherit; display: block; }
+    .owner-list .avatar-list { display: flex; margin-top: 5px; padding-left: 5px; }
+    .owner-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border-color); margin-left: -10px; object-fit: cover; background-color: var(--card-bg-color); }
+    .owner-avatar:first-child { margin-left: 0; }
+    
+    /* Kanban Avatar Styles */
+    .owner-avatars { display: flex; align-items: center; gap: 5px; }
+    .owner-avatars .owner-avatar { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border-color); object-fit: cover; background-color: var(--card-bg-color); }
+    .unassigned-text { font-size: 0.8rem; color: #6c757d; font-style: italic; }
+    
+    /* Enhanced Task Card Styles */
+    .task-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+    .task-meta-row .meta-item { flex: 1; }
+    .task-hours-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); gap: 10px; }
+    .task-hours-row .meta-item { flex: 1; font-size: 0.8rem; }
+    
+    /* Badge Styles */
+    .priority-badge { padding: 6px 12px; border-radius: 12px; font-weight: 700; font-size: 1.1rem; color: #fff; display: inline-block; }
+    .priority-badge.priority-10, .priority-badge.priority-9 { background-color: #dc3545; }
+    .priority-badge.priority-8, .priority-badge.priority-7 { background-color: #fd7e14; }
+    .priority-badge.priority-6, .priority-badge.priority-5 { background-color: #ffc107; color: #000; }
+    .priority-badge.priority-4, .priority-badge.priority-3 { background-color: #17a2b8; }
+    .priority-badge.priority-2, .priority-badge.priority-1 { background-color: #6c757d; }
+    
+    .impact-badge { padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 0.75rem; color: #fff; display: inline-block; }
+    .impact-badge.impact-high { background-color: #dc3545; }
+    .impact-badge.impact-medium { background-color: #ffc107; color: #000; }
+    .impact-badge.impact-low { background-color: #17a2b8; }
+    
+    .category-badge, .milestone-badge { padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 0.75rem; color: #fff; display: inline-block; background-color: var(--secondary-color); color: var(--bg-color); }
+    
+    .status-badge.status-completed { background-color: #28a745; color: #fff; }
+    .status-badge.status-in-progress { background-color: #ffc107; color: #000; }
+    .status-badge.status-not-started { background-color: #6c757d; color: #fff; }
+    .status-badge.status-blocked { background-color: #dc3545; color: #fff; }
+    .status-badge.status-cancelled { background-color: #343a40; color: #fff; }
+    
+    /* Kanban Status Badge Overrides */
+    .kanban-card .status-badge { 
+        background-color: var(--secondary-color) !important; 
+        color: var(--bg-color) !important; 
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+    
+    /* Specific Kanban Status Colors */
+    .kanban-card .status-badge.status-completed { background-color: #28a745 !important; color: #fff !important; }
+    .kanban-card .status-badge.status-in-progress { background-color: #ffc107 !important; color: #000 !important; }
+    .kanban-card .status-badge.status-not-started { background-color: #6c757d !important; color: #fff !important; }
+    .kanban-card .status-badge.status-blocked { background-color: #dc3545 !important; color: #fff !important; }
+    
+    /* Milestone Filters */
+    .milestone-filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 20px; }
+    
+    /* Milestone Dropdown Styles */
+    .milestone-dropdown-container { 
+        display: flex; 
+        align-items: center; 
+        gap: 15px; 
+        background: var(--card-bg-color); 
+        padding: 15px 20px; 
+        border-radius: 8px; 
+        border: 1px solid var(--border-color);
+        margin-bottom: 20px;
+    }
+    
+    .milestone-label { 
+        font-family: 'Orbitron', sans-serif; 
+        font-weight: bold; 
+        color: var(--secondary-color); 
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .milestone-select { 
+        padding: 8px 12px; 
+        background-color: rgba(0,0,0,0.3); 
+        border: 1px solid var(--border-color); 
+        color: var(--text-color); 
+        border-radius: 4px; 
+        font-family: 'Exo 2', sans-serif; 
+        font-size: 0.9rem;
+        min-width: 300px;
+        cursor: pointer;
+    }
+    
+    .milestone-select:focus { 
+        outline: none; 
+        border-color: var(--secondary-color); 
+        box-shadow: 0 0 10px var(--glow-color-secondary);
+    }
+    
+    .milestone-select option { 
+        background-color: var(--bg-color); 
+        color: var(--text-color); 
+        padding: 8px;
+    }
+    
+    /* Task Actions */
+    .task-actions-row { display: flex; justify-content: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+    .complete-btn { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+    .complete-btn:hover { background: #218838; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+    .complete-btn i { font-size: 0.8rem; }
+    
+    /* --- PART 3: AI TASK DETAIL PAGE STYLES --- */
+    .detail-body { padding: 2rem; }
+    .task-header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--primary-color); }
+    .task-header-bar h1 { font-family: 'Orbitron', sans-serif; margin: 0; }
+    .detail-container { display: grid; grid-template-columns: 320px 1fr; gap: 2.5rem; max-width: 1400px; margin: 0 auto; }
+    .left-panel, .right-panel { background-color: transparent; }
+    .detail-card { background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .detail-card h3 { font-family: 'Orbitron', sans-serif; color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 0; margin-bottom: 1rem; }
+    .detail-card ul { list-style-type: none; padding: 0; margin: 0; }
+    .detail-card li { margin-bottom: 0.75rem; }
+    .check-item { list-style-type: '✓  '; margin-left: 1.2rem; color: #28a745; }
+    .check-item span { color: var(--text-color); }
+    .right-panel h2 { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; margin-top: 0; }
+    .step-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.2rem; }
+    .step-number { background-color: var(--secondary-color); color: var(--bg-color); font-family: 'Orbitron'; font-weight: bold; min-width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 0.9rem; }
+    .step-item p { margin: 0; opacity: 0.8; }
+    .step-item strong { display: block; margin-bottom: 0.25rem; }
+    .team-member-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+    .team-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
+    .team-name { font-weight: bold; }
+    .team-contact { font-size: 0.85rem; opacity: 0.7; }
+    .control-panel h3 { margin-bottom: 1.5rem; }
+    .control-panel .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .control-group { display: flex; flex-direction: column; }
+    .control-group label { font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; opacity: 0.8; }
+    .control-group select, .control-group input { width: 100%; box-sizing: border-box; padding: 8px; background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; font-family: 'Exo 2', sans-serif; font-size: 1rem; }
+    select[multiple] { height: 120px; padding: 10px; }
+    .btn-small { padding: 8px 12px; margin-top: 8px; background-color: var(--secondary-color); color: var(--bg-color); border: none; cursor: pointer; border-radius: 4px; font-weight: bold; font-family: 'Orbitron'; text-transform: uppercase; }
+    .btn-small.danger { background-color: #dc3545; color: white; }
+    .other-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem; }
+    
+    /* --- PART 4: KANBAN & UPLOADER STYLES --- */
+    .app-container { display: flex; flex-direction: column; height: 100vh; width: 100%; box-sizing: border-box; }
+    .kanban-header { padding: 1rem 2rem; background-color: rgba(10, 10, 20, 0.8); border-bottom: 1px solid var(--primary-color); }
+    .kanban-header h2 { margin: 0; text-align: center; }
+    .tabs-container { display: flex; padding: 0 20px; gap: 5px; border-bottom: 1px solid var(--border-color); background-color: rgba(10, 10, 20, 0.8); }
+    .tab { padding: 12px 18px; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-color); opacity: 0.7; transition: all 0.2s ease-in-out; }
+    .tab:hover { background-color: rgba(255, 255, 255, 0.05); opacity: 1; }
+    .tab.active { border-bottom-color: var(--secondary-color); color: var(--secondary-color); font-weight: bold; opacity: 1; }
+    .board-container { display: flex; align-items: flex-start; gap: 20px; padding: 20px; flex-grow: 1; overflow-x: auto; height: 100%; }
+    .kanban-column { background-color: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; min-width: 320px; max-width: 320px; display: flex; flex-direction: column; max-height: 95%; }
+    .column-title { font-family: 'Orbitron', sans-serif; font-weight: bold; padding: 10px; margin-bottom: 10px; color: var(--secondary-color); border-bottom: 1px solid var(--border-color); }
+    .card-container { min-height: 50px; flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+    .kanban-card { background-color: var(--card-bg-color); border-radius: 4px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border-color); cursor: grab; transition: background-color 0.2s; }
+    .kanban-card:hover { background-color: rgba(255, 255, 255, 0.1); border-color: var(--secondary-color); }
+    .kanban-card:active { cursor: grabbing; }
+    .card-title { font-weight: 600; margin-bottom: 10px; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; opacity: 0.7; }
+    .card-due-date { font-size: 0.8em; padding: 2px 6px; border-radius: 3px; background-color: var(--border-color); }
+    .card-due-date.overdue { background-color: #dc3545; color: white; font-weight: bold; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 998; display: none; justify-content: center; align-items: center; }
+    .modal-content { background: var(--bg-color); border: 1px solid var(--primary-color); border-radius: 8px; padding: 2rem; width: 90%; max-width: 600px; box-shadow: 0 5px 25px rgba(255, 0, 255, 0.2); position: relative; }
+    .modal-close { position: absolute; top: 10px; right: 20px; font-size: 2.5rem; font-weight: bold; cursor: pointer; color: var(--text-color); opacity: 0.7; transition: opacity 0.2s; }
+    .modal-close:hover { opacity: 1; }
+    .modal-title { font-family: 'Orbitron', sans-serif; color: var(--secondary-color); margin-top: 0; margin-bottom: 2rem; }
+    .modal-form .form-group { margin-bottom: 1.5rem; }
+    .modal-form label { display: block; margin-bottom: 0.5rem; font-weight: bold; opacity: 0.8; }
+    .modal-form input, .modal-form select { width: 100%; padding: 10px; box-sizing: border-box; background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-size: 1rem; }
+    .form-group-inline { display: flex; gap: 1rem; }
+    .form-group-inline .form-group { width: 100%; }
+    .form-actions { margin-top: 2rem; text-align: right; }
+    .modal-status { text-align: right; margin-top: 1rem; font-weight: bold; display: none; }
+    .modal-status.success { color: #28a745; }
+
+    /* Status badges (unified colors) */
+    .status-badge, .priority-badge { padding: 3px 8px; border-radius: 5px; font-weight: 600; font-size: 0.8rem; color: #fff; display: inline-block; }
+    .status-badge.status-completed { background-color: #28a745; color: #fff; }
+    .status-badge.status-in-progress { background-color: #ffc107; color: #000; }
+    .status-badge.status-not-started { background-color: #6c757d; color: #fff; }
+    .status-badge.status-blocked { background-color: #dc3545; color: #fff; }
+    .status-badge.status-cancelled { background-color: #343a40; color: #fff; }
+
+    /* Dim completed items for easier scanning */
+    .task-card.completed-dim { opacity: 0.7; filter: grayscale(0.2); }
+    .task-card.completed-dim .card-title { text-decoration: none; }
+    
+    /* --- PART 5: RESPONSIVE ADJUSTMENTS --- */
+    @media (max-width: 900px) { .detail-container { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .navbar { flex-direction: column; } }
+    
+    </style>

@@ -1,0 +1,16 @@
+# Ignore local files that should not be pushed to Apps Script
+node_modules/
+.git/
+.DS_Store
+
+# Avoid duplicate manifests; Apps Script expects appsscript.json
+appscript.json
+
+# Avoid duplicate top-level code file; we only push code.gs
+Code.js
+
+# Logs and temp
+*.log
+tmp/
+dist/
+build/

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <!-- We are including your existing style sheet for a dark theme -->
+  <?!= include('style.css.html'); ?>
+  <style>
+    /* Additional styles to make the uploader look good in your theme */
+    body { 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        min-height: 90vh; 
+        padding: 2rem; 
+    }
+    .uploader-container { 
+        max-width: 800px; 
+        width: 100%; 
+        text-align: center; 
+    }
+    textarea { 
+        width: 100%; 
+        box-sizing: border-box; 
+        height: 40vh; 
+        margin-top: 1.5rem; 
+        border-radius: 8px; 
+        border: 1px solid var(--border-color); 
+        padding: 1rem; 
+        font-size: 1rem; 
+        background-color: rgba(0,0,0,0.2); 
+        color: var(--text-color); 
+        font-family: inherit;
+    }
+    #status { 
+        margin-top: 1.5rem; 
+        font-weight: bold; 
+        font-size: 1.1rem; 
+        padding: 1rem; 
+        border-radius: 8px; 
+        word-wrap: break-word; 
+        text-align: left; 
+        display: none; /* Hidden by default */
+    }
+    .status-success { 
+        color: #28a745; 
+        background-color: rgba(40, 167, 69, 0.2); 
+        border: 1px solid #28a745; 
+    }
+    .status-error { 
+        color: #dc3545; 
+        background-color: rgba(220, 53, 69, 0.2); 
+        border: 1px solid #dc3545; 
+    }
+  </style>
+</head>
+<body>
+  <div class="uploader-container">
+    
+    <!-- THIS IS THE FIX: Using the exact same structure as the main page title -->
+    <div class="section-title">
+        <h2 class="glitch" data-text="AI Transcript Uploader">AI Transcript Uploader</h2>
+    </div>
+    
+    <p>Paste your full meeting transcript below. The AI will analyze it and add all identified tasks to the Master Project Dashboard.</p>
+    <textarea id="transcript" placeholder="Paste entire transcript here..."></textarea>
+    <button id="submitBtn" class="btn btn-primary interactive" onclick="submitTranscript()">Submit Transcript</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    function submitTranscript() {
+      var submitButton = document.getElementById("submitBtn");
+      var statusDiv = document.getElementById("status");
+      var transcriptText = document.getElementById("transcript").value;
+
+      if (!transcriptText.trim()) {
+        statusDiv.innerText = "Please paste a transcript before submitting.";
+        statusDiv.className = "status-error";
+        statusDiv.style.display = 'block';
+        return;
+      }
+
+      statusDiv.innerText = "Processing... Please wait. This may take a moment.";
+      statusDiv.className = ""; // Clear previous styles
+      statusDiv.style.display = 'block';
+      submitButton.disabled = true;
+      submitButton.textContent = 'PROCESSING...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          statusDiv.innerHTML = response;
+          if (response.startsWith("SUCCESS:")) {
+            statusDiv.className = "status-success";
+          } else {
+            statusDiv.className = "status-error";
+          }
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit Transcript';
+        })
+        .withFailureHandler(function(error) {
+          statusDiv.innerText = "CLIENT-SIDE ERROR: " + error.message;
+          statusDiv.className = "status-error";
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit Transcript';
+        })
+        .processPastedTranscript(transcriptText);
+    }
+  </script>
+</body>
+</html>
