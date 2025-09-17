@@ -531,7 +531,7 @@ function getAvatarMap() {
             } else {
               Logger.log(`Could not extract fileId from URL: ${driveUrl}`);
               // Use fallback for this person
-              map[name.trim().toLowerCase()] = 'https://i.imgur.com/Vues1gP.png';
+              map[name.trim().toLowerCase()] = 'https://via.placeholder.com/150x150/4F46E5/FFFFFF?text=LB';
             }
           } else {
             Logger.log(`Missing name or URL for row ${index + 1}`);
@@ -541,7 +541,7 @@ function getAvatarMap() {
         
         // Add fallback for unassigned
         if (!avatarMap['unassigned']) {
-          avatarMap['unassigned'] = 'https://i.imgur.com/Vues1gP.png'; // Default LuvBuds logo
+          avatarMap['unassigned'] = 'https://via.placeholder.com/150x150/4F46E5/FFFFFF?text=LB'; // Default LuvBuds logo
         }
         
         Logger.log("Final avatar map keys: " + Object.keys(avatarMap).join(', '));
@@ -556,7 +556,7 @@ function getAvatarMap() {
         Logger.log("ERROR in getAvatarMap: " + e.stack);
         // Return a minimal map with fallback
         return {
-          'unassigned': 'https://i.imgur.com/Vues1gP.png'
+          'unassigned': 'https://via.placeholder.com/150x150/4F46E5/FFFFFF?text=LB'
         };
     }
 }
@@ -761,7 +761,7 @@ function getTasks() {
           Logger.log(`No team member found for "${name}", using unassigned`);
           // Use unassigned member
           member = team.find(m => m.fullName.toLowerCase() === 'unassigned') || 
-                   { fullName: name, avatarUrl: 'https://i.imgur.com/Vues1gP.png', email: '', phone: '' };
+                   { fullName: name, avatarUrl: 'https://via.placeholder.com/150x150/4F46E5/FFFFFF?text=LB', email: '', phone: '' };
         } else {
           // Use the processed avatar URL from avatarMap instead of raw URL
           const processedAvatarUrl = avatarMap[member.fullName.toLowerCase()] || member.avatarUrl;
