@@ -531,7 +531,7 @@ function getAvatarMap() {
             } else {
               Logger.log(`Could not extract fileId from URL: ${driveUrl}`);
               // Use fallback for this person
-              map[name.trim().toLowerCase()] = 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg';
+              map[name.trim().toLowerCase()] = 'https://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg';
             }
           } else {
             Logger.log(`Missing name or URL for row ${index + 1}`);
@@ -541,7 +541,7 @@ function getAvatarMap() {
         
         // Add fallback for unassigned
         if (!avatarMap['unassigned']) {
-          avatarMap['unassigned'] = 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'; // Default LuvBuds logo
+          avatarMap['unassigned'] = 'https://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'; // Default LuvBuds logo
         }
         
         Logger.log("Final avatar map keys: " + Object.keys(avatarMap).join(', '));
@@ -556,7 +556,7 @@ function getAvatarMap() {
         Logger.log("ERROR in getAvatarMap: " + e.stack);
         // Return a minimal map with fallback
         return {
-          'unassigned': 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'
+          'unassigned': 'https://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg'
         };
     }
 }
@@ -761,7 +761,7 @@ function getTasks() {
           Logger.log(`No team member found for "${name}", using unassigned`);
           // Use unassigned member
           member = team.find(m => m.fullName.toLowerCase() === 'unassigned') || 
-                   { fullName: name, avatarUrl: 'http://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg', email: '', phone: '' };
+                   { fullName: name, avatarUrl: 'https://luvbudstv.com/luvbudstv/public/images/luvbuds%20logo%20avatar.jpg', email: '', phone: '' };
         } else {
           // Use the processed avatar URL from avatarMap instead of raw URL
           const processedAvatarUrl = avatarMap[member.fullName.toLowerCase()] || member.avatarUrl;
