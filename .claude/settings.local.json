@@ -41,7 +41,8 @@
       "Bash(xargs kill:*)",
       "Bash(cat:*)",
       "WebFetch(domain:docs.google.com)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(timeout 10s npm run dev)"
     ],
     "deny": [],
     "ask": []

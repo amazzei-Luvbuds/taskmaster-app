@@ -69,21 +69,21 @@ I want **a consistent development environment**
 So that **I can work efficiently without setup issues**
 
 **Acceptance Criteria:**
-- [ ] All developers can run `npm run dev` and access localhost:5173
-- [ ] TypeScript compilation shows no errors
-- [ ] Tailwind CSS classes render correctly
+- [x] All developers can run `npm run dev` and access localhost:5173
+- [x] TypeScript compilation shows no errors
+- [x] Tailwind CSS classes render correctly
 - [ ] Git hooks prevent commits with linting errors
-- [ ] Package.json locks dependency versions
+- [x] Package.json locks dependency versions
 
 **Definition of Ready:**
-- [ ] Development machine requirements documented
-- [ ] Setup script tested on clean environment
+- [x] Development machine requirements documented
+- [x] Setup script tested on clean environment
 - [ ] Rollback procedure documented
 
 **Definition of Done:**
-- [ ] All team members successfully run development server
-- [ ] Code quality gates are enforced
-- [ ] Documentation is updated
+- [x] All team members successfully run development server
+- [x] Code quality gates are enforced
+- [x] Documentation is updated
 
 ---
 
@@ -98,18 +98,18 @@ I want **a reliable REST API**
 So that **I can fetch and manipulate task data consistently**
 
 **Acceptance Criteria:**
-- [ ] Google Apps Script serves JSON responses instead of HTML
-- [ ] CORS headers allow frontend requests
-- [ ] All CRUD operations (Create, Read, Update, Delete) work
-- [ ] Error responses include meaningful HTTP status codes
-- [ ] API maintains backward compatibility during transition
+- [x] Google Apps Script serves JSON responses instead of HTML
+- [x] CORS headers allow frontend requests
+- [x] All CRUD operations (Create, Read, Update, Delete) work
+- [x] Error responses include meaningful HTTP status codes
+- [x] API maintains backward compatibility during transition
 
 **Technical Tasks:**
-- [ ] Add API router to existing Code.js
-- [ ] Implement CORS middleware
-- [ ] Create JSON response wrapper
-- [ ] Test all existing endpoints
-- [ ] Deploy and verify with live data
+- [x] Add API router to existing Code.js
+- [x] Implement CORS middleware
+- [x] Create JSON response wrapper
+- [x] Test all existing endpoints
+- [x] Deploy and verify with live data
 
 **Dependencies:**
 - Requires F1.1 (Development Environment)
@@ -127,11 +127,11 @@ I want **TypeScript interfaces for all data structures**
 So that **I can catch errors at compile time and have better IDE support**
 
 **Acceptance Criteria:**
-- [ ] Task interface covers all current and planned fields
-- [ ] API response types match backend reality
-- [ ] Component props are fully typed
-- [ ] No `any` types except for edge cases
-- [ ] IDE provides full autocomplete and error detection
+- [x] Task interface covers all current and planned fields
+- [x] API response types match backend reality
+- [x] Component props are fully typed
+- [x] No `any` types except for edge cases
+- [x] IDE provides full autocomplete and error detection
 
 **Technical Implementation:**
 ```typescript
@@ -387,11 +387,11 @@ I want **to see HubSpot metrics alongside my tasks**
 So that **I can make data-driven decisions about my sales activities**
 
 **Acceptance Criteria:**
-- [ ] HubSpot API integration works reliably
-- [ ] Metrics display only in sales department
-- [ ] Data refreshes automatically
-- [ ] API failures don't break the page
-- [ ] Metrics are relevant to task management
+- [x] HubSpot API integration works reliably
+- [x] Metrics display only in sales department
+- [x] Data refreshes automatically
+- [x] API failures don't break the page
+- [x] Metrics are relevant to task management
 
 ---
 
@@ -451,12 +451,12 @@ I want **to view and manage tasks in a visual Kanban board**
 So that **I can see workflow status and move tasks between stages**
 
 **Acceptance Criteria:**
-- [ ] Smooth drag-and-drop between columns
-- [ ] Customizable columns per department
-- [ ] Virtual scrolling for large datasets (500+ tasks)
-- [ ] Real-time status updates when tasks move
-- [ ] Mobile-friendly touch interactions
-- [ ] Keyboard accessibility as alternative to drag-and-drop
+- [x] Smooth drag-and-drop between columns
+- [x] Customizable columns per department
+- [x] Virtual scrolling for large datasets (500+ tasks)
+- [x] Real-time status updates when tasks move
+- [x] Mobile-friendly touch interactions
+- [x] Keyboard accessibility as alternative to drag-and-drop
 
 **Performance Requirements:**
 - Handle 500+ tasks without performance degradation
@@ -509,12 +509,12 @@ I want **to view performance metrics across all departments**
 So that **I can make informed decisions about resource allocation**
 
 **Acceptance Criteria:**
-- [ ] Cross-department task statistics
-- [ ] Completion rate trends over time
-- [ ] Department performance comparison
-- [ ] Exportable reports in PDF/Excel format
-- [ ] Role-based access control
-- [ ] Real-time data updates
+- [x] Cross-department task statistics
+- [x] Completion rate trends over time
+- [x] Department performance comparison
+- [x] Exportable reports in PDF/Excel format
+- [x] Role-based access control
+- [x] Real-time data updates
 
 **Metrics to Display:**
 - Total tasks by department
