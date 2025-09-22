@@ -17,9 +17,6 @@
   - `src/store/appStore.ts`
 - **Effort:** 2-3 days
 
-
-
-
 ### 2. Input Validation & XSS Prevention
 - **Issue:** Missing DOMPurify and comprehensive input sanitization
 - **Impact:** Security vulnerability
@@ -28,6 +25,9 @@
   - `src/utils/sanitization.ts` (new)
   - All form components (`TaskForm.tsx`, `ImportModal.tsx`, etc.)
 - **Effort:** 1-2 days
+
+
+
 
 ### 3. Accessibility Compliance (WCAG 2.1 AA)
 - **Issue:** Missing ARIA labels, screen reader support

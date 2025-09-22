@@ -1,0 +1,162 @@
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking                               pt 16 backup> cd "/Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup" && git status
+fatal: Not a git repository (or any of the parent directories): .git
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup> cd "/Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup" && git status
+Oops, something went wrong.
+Please report this bug with ALL the details below, including both the 'Environment' and 'Exception' sections.
+Please report on GitHub: https://github.com/PowerShell/PSReadLine/issues/new?template=Bug_Report.yaml
+Thank you!
+
+### Environment
+PSReadLine: 2.3.6+d2e770f93b7a53d8660a6402eb29d1ae1c35e767
+PowerShell: 7.5.1
+OS: Darwin 23.4.0 Darwin Kernel Version 23.4.0: Fri Mar 15 00:10:42 PDT 2024; root:xnu-10063.101.17~1/RELEASE_ARM64_T6000
+BufferWidth: 108
+BufferHeight: 2
+
+Last 200 Keys:
+
+ m e n t s / c u r s o r Spacebar p r o j e c t s / t a s k m a s t e r d o n e w o r k i n g Spacebar s e p t Spacebar 1 6 Spacebar b a c k u p " Spacebar & & Spacebar g i t Spacebar s t a t u s Enter
+ c d Spacebar " / U s e r s / a l e x a n d e r m a z z e i 2 0 2 0 / D o c u m e n t s / c u r s o r Spacebar p r o j e c t s / t a s k m a s t e r d o n e w o r k i n g Spacebar s e p t Spacebar 1 6 Spacebar b a c k u p / t a s k m a s t e r - r e a c t " Spacebar & & Spacebar g i t Spacebar s t a t u s Enter
+
+
+### Exception
+
+System.InvalidOperationException: Cannot locate the offset in the rendered text that was pointed by the original cursor. Initial Coord: (94, 3) Buffer: (108, 5) Cursor: (95, 1)
+   at Microsoft.PowerShell.PSConsoleReadLine.RecomputeInitialCoords(Boolean isTextBufferUnchanged)
+   at Microsoft.PowerShell.PSConsoleReadLine.ReallyRender(RenderData renderData, String defaultColor)
+   at Microsoft.PowerShell.PSConsoleReadLine.ForceRender()
+   at Microsoft.PowerShell.PSConsoleReadLine.Render()
+   at Microsoft.PowerShell.PSConsoleReadLine.Insert(Char c)
+   at Microsoft.PowerShell.PSConsoleReadLine.SelfInsert(Nullable`1 key, Object arg)
+   at Microsoft.PowerShell.PSConsoleReadLine.ProcessOneKey(PSKeyInfo key, Dictionary`2 dispatchTable, Boolean ignoreIfNoAction, Object arg)
+   at Microsoft.PowerShell.PSConsoleReadLine.InputLoop()
+   at Microsoft.PowerShell.PSConsoleReadLine.ReadLine(Runspace runspace, EngineIntrinsics engineIntrinsics, CancellationToken cancellationToken, Nullable`1 lastRunStatus)
+
+
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup> cd "/Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react" && git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   src/api/client.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> grep -n "logAuthentication({" lib/docusign-client.ts | cat
+Oops, something went wrong.
+Please report this bug with ALL the details below, including both the 'Environment' and 'Exception' sections.
+Plegit commit -m "Fix API base URL: Replace placeholder YOUR_SCRIPT_ID with actual Google Apps Script deployment URLu!
+>> 
+>> - Updated fallback URL in API_CONFIG to use real deployment URL
+>> - This resolves CORS connection issues between React app and Google Apps Script API
+>> - Fixes network errors and enables proper API communication"
+[main 7b9b522] Fix API base URL: Replace placeholder YOUR_SCRIPT_ID with actual Google Apps Script deployment URL64_T6000
+ 1 git push origin main     (+), 1 deletion(-)
+Counting objects: 5, done.020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-reac
+Delta compression using up to 10 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 672 bytes | 672.00 KiB/s, done.
+Total 5 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To https://github.com/alexandermazzei/taskmaster-react.git
+   df7b069..7b9b522  main -> main
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> ^C
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git push
+Everything up-to-date
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> cd "/Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi" && echo "Testing deployment function..."
+Testing deployment function...
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> curl -X GET "https://script.google.com/macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec?api=v1&endpoint=health" -v
+Note: Unnecessary use of -X or --request, GET is already inferred.
+*   Trying 172.217.15.206:443...
+* Connected to script.google.com (172.217.15.206) port 443
+* ALPN: curl offers h2,http/1.1
+* (304) (OUT), TLS handshake, Client hello (1):
+*  CAfile: /etc/ssl/cert.pem
+*  CApath: none
+* (304) (IN), TLS handshake, Server hello (2):
+* (304) (IN), TLS handshake, Unknown (8):
+* (304) (IN), TLS handshake, Certificate (11):
+* (304) (IN), TLS handshake, CERT verify (15):
+* (304) (IN), TLS handshake, Finished (20):
+* (304) (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / AEAD-CHACHA20-POLY1305-SHA256
+* ALPN: server accepted h2
+* Server certificate:
+*  subject: CN=*.google.com
+*  start date: Aug 25 08:39:47 2025 GMT
+*  expire date: Nov 17 08:39:46 2025 GMT
+*  subjectAltName: host "script.google.com" matched cert's "*.google.com"
+*  issuer: C=US; O=Google Trust Services; CN=WR2
+*  SSL certificate verify ok.
+* using HTTP/2
+* [HTTP/2] [1] OPENED stream for https://script.google.com/macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec?api=v1&endpoint=health
+* [HTTP/2] [1] [:method: GET]
+* [HTTP/2] [1] [:scheme: https]
+* [HTTP/2] [1] [:authority: script.google.com]
+* [HTTP/2] [1] [:path: /macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec?api=v1&endpoint=health]
+* [HTTP/2] [1] [user-agent: curl/8.4.0]
+* [HTTP/2] [1] [accept: */*]
+> GET /macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec?api=v1&endpoint=health HTTP/2
+> Host: script.google.com
+> User-Agent: curl/8.4.0
+> Accept: */*
+> 
+< HTTP/2 500 
+< cache-control: no-cache, no-store, max-age=0, must-revalidate
+< pragma: no-cache
+< expires: Mon, 01 Jan 1990 00:00:00 GMT
+< date: Tue, 16 Sep 2025 22:40:59 GMT
+< content-type: text/html; charset=utf-8
+< x-content-type-options: nosniff
+< x-xss-protection: 1; mode=block
+< server: GSE
+< alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+< accept-ranges: none
+< vary: Accept-Encoding
+< 
+* Connection #0 to host script.google.com left intact
+<!DOCTYPE html><html lang="es"><head><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>Error</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="TUPO59qhJTIr81vnW79V5A"><style nonce="TUPO59qhJTIr81vnW79V5A">.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}*:first-child+html .goog-inline-block{display:inline}#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:#000;display:inline-block;opacity:.54;text-decoration:none;font-family:"Product Sans",Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}sentinel{}</style><style type="text/css" nonce="TUPO59qhJTIr81vnW79V5A">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="TUPO59qhJTIr81vnW79V5A">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><p style="padding-top: 15px">Documentos de Google detectó un error. Intenta cargar la página de nuevo o vuelve en unos minutos.</p><p>Para obtener más información sobre los editores de Documentos de Google, visita nuestro <a href="https://support.google.com/docs/?hl=es_419&p=error_help" target="_blank">Centro de ayuda</a>.</p><p><br><b>Lamentamos los inconvenientes que esto pueda causarte.</b><br><i>- El equipo de Documentos de Google</i></p></div></div></body><style nonce="TUPO59qhJTIr81vnW79V5A">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> curl -X GET "https://script.google.com/macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec?api=v1&endpoint=health" -s
+<!DOCTYPE html><html lang="es"><head><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>No se encontró la página</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="0Pyy3K10-REKMgNKuE9ZsQ"><style nonce="0Pyy3K10-REKMgNKuE9ZsQ">.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}*:first-child+html .goog-inline-block{display:inline}#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:#000;display:inline-block;opacity:.54;text-decoration:none;font-family:"Product Sans",Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}sentinel{}</style><style type="text/css" nonce="0Pyy3K10-REKMgNKuE9ZsQ">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="0Pyy3K10-REKMgNKuE9ZsQ">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><div align="center"><p class="errorMessage" style="padding-top: 50px">El archivo que solicitaste no existe.</p><p>Asegúrate de que tienes la dirección URL correcta y de que el archivo existe.</p><div style="background: #F0F6FF; border: 1px solid black; margin-top: 35px; padding: 10px 125px; width: 300px;"><p><strong>Realiza tus proyectos con Google Drive</strong></p><p>Las aplicaciones de Google Drive te facilitan la tarea de crear, almacenar y compartir documentos, hojas de cálculo, presentaciones y otros archivos en línea.</p><p>Obtén más información en <a href="https://drive.google.com/start/apps">drive.google.com/start/apps</a>.</p></div></div></div></div></body><style nonce="0Pyy3K10-REKMgNKuE9ZsQ">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> curl -X GET "https://script.google.com/macros/s/AKfycbygcrx-ItSN8DgwrimI_n8K7q2cjuvEHiFcAPZpGd2uL0cWoA3u5tvyLzPyxTky3StFBw/exec" -s         
+<!DOCTYPE html><html lang="es"><head><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>No se encontró la página</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="RH6l_QcNc-0kjsKEBsuFHQ"><style nonce="RH6l_QcNc-0kjsKEBsuFHQ">.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}*:first-child+html .goog-inline-block{display:inline}#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:#000;display:inline-block;opacity:.54;text-decoration:none;font-family:"Product Sans",Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}sentinel{}</style><style type="text/css" nonce="RH6l_QcNc-0kjsKEBsuFHQ">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="RH6l_QcNc-0kjsKEBsuFHQ">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><div align="center"><p class="errorMessage" style="padding-top: 50px">El archivo que solicitaste no existe.</p><p>Asegúrate de que tienes la dirección URL correcta y de que el archivo existe.</p><div style="background: #F0F6FF; border: 1px solid black; margin-top: 35px; padding: 10px 125px; width: 300px;"><p><strong>Realiza tus proyectos con Google Drive</strong></p><p>Las aplicaciones de Google Drive te facilitan la tarea de crear, almacenar y compartir documentos, hojas de cálculo, presentaciones y otros archivos en línea.</p><p>Obtén más información en <a href="https://drive.google.com/start/apps">drive.google.com/start/apps</a>.</p></div></div></div></div></body><style nonce="RH6l_QcNc-0kjsKEBsuFHQ">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> curl -X GET "https://script.google.com/macros/s/AKfycbysyQ7KJtLzzREo3zKcUIqKtXkAlxmmfAc0GMnSlzHi2nO9VD2ILHQZQja0qg75LDww3A/exec?api=v1&endpoint=health" -s
+<!DOCTYPE html><html lang="es"><head><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>No se encontró la página</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="oy15fkbDOPtq2olPwRshmQ"><style nonce="oy15fkbDOPtq2olPwRshmQ">.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}*:first-child+html .goog-inline-block{display:inline}#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:#000;display:inline-block;opacity:.54;text-decoration:none;font-family:"Product Sans",Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}sentinel{}</style><style type="text/css" nonce="oy15fkbDOPtq2olPwRshmQ">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="oy15fkbDOPtq2olPwRshmQ">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><div align="center"><p class="errorMessage" style="padding-top: 50px">El archivo que solicitaste no existe.</p><p>Asegúrate de que tienes la dirección URL correcta y de que el archivo existe.</p><div style="background: #F0F6FF; border: 1px solid black; margin-top: 35px; padding: 10px 125px; width: 300px;"><p><strong>Realiza tus proyectos con Google Drive</strong></p><p>Las aplicaciones de Google Drive te facilitan la tarea de crear, almacenar y compartir documentos, hojas de cálculo, presentaciones y otros archivos en línea.</p><p>Obtén más información en <a href="https://drive.google.com/start/apps">drive.google.com/start/apps</a>.</p></div></div></div></div></body><style nonce="oy15fkbDOPtq2olPwRshmQ">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> curl -X GET "https://script.google.com/macros/s/AKfycbysyQ7KJtLzzREo3zKcUIqKtXkAlxmmfAc0GMnSlzHi2nO9VD2ILHQZQja0qg75LDww3A/exec" -s         
+<!DOCTYPE html><html lang="es"><head><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>Error</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="ly-31u8XyVuO-ZHbStL99g"><style nonce="ly-31u8XyVuO-ZHbStL99g">.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}*:first-child+html .goog-inline-block{display:inline}#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:#000;display:inline-block;opacity:.54;text-decoration:none;font-family:"Product Sans",Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}sentinel{}</style><style type="text/css" nonce="ly-31u8XyVuO-ZHbStL99g">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="ly-31u8XyVuO-ZHbStL99g">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><p style="padding-top: 15px">Documentos de Google detectó un error. Intenta cargar la página de nuevo o vuelve en unos minutos.</p><p>Para obtener más información sobre los editores de Documentos de Google, visita nuestro <a href="https://support.google.com/docs/?hl=es_419&p=error_help" target="_blank">Centro de ayuda</a>.</p><p><br><b>Lamentamos los inconvenientes que esto pueda causarte.</b><br><i>- El equipo de Documentos de Google</i></p></div></div></body><style nonce="ly-31u8XyVuO-ZHbStL99g">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmasterapi> cd "/Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react" && git add src/api/client.ts
+
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git commit -m "Update API base URL to new Google Apps Script deployment
+>> 
+>> - Updated fallback URL to use new deployment ID: AKfycbysyQ7KJtLzzREo3zKcUIqKtXkAlxmmfAc0GMnSlzHi2nO9VD2ILHQZQja0qg75LDww3A
+>> - This should resolve CORS connection issues with the redeployed Google Apps Script"
+[main ce89c43] Update API base URL to new Google Apps Script deployment
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git push
+To https://github.com/alexandermazzei/taskmaster-react.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/alexandermazzei/taskmaster-react.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git pull --rebase                               
+First, rewinding head to replay your work on top of it...
+Applying: Update API base URL to new Google Apps Script deployment
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> git push
+Counting objects: 5, done.
+Delta compression using up to 10 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 657 bytes | 657.00 KiB/s, done.
+Total 5 (delta 3), reused 0 (delta 0)
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To https://github.com/alexandermazzei/taskmaster-react.git
+   2270b84..255c81e  main -> main
+PS /Users/alexandermazzei2020/Documents/cursor projects/taskmasterdoneworking sept 16 backup/taskmaster-react> 

@@ -20,7 +20,7 @@ Header always set X-XSS-Protection "1; mode=block"
 # CORS headers for development
 Header always set Access-Control-Allow-Origin "*"
 Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-ID-Token, X-User-ID, X-User-Email"
 
 # Handle preflight requests
 RewriteCond %{REQUEST_METHOD} OPTIONS

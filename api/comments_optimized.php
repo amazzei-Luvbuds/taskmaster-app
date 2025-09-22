@@ -1,0 +1,527 @@
+<?php
+/**
+ * Optimized Comments API with Advanced Pagination and Performance Features
+ * Includes cursor-based pagination, caching, and performance monitoring
+ */
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-ID-Token, X-User-ID, X-User-Email');
+header('Access-Control-Allow-Credentials: true');
+
+// Handle preflight OPTIONS requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once 'config.php';
+
+// Performance monitoring
+$request_start = microtime(true);
+$memory_start = memory_get_usage();
+
+// Cache configuration
+$CACHE_CONFIG = [
+    'enabled' => true,
+    'ttl' => 300, // 5 minutes
+    'max_size' => 1000,
+    'prefix' => 'comments_cache:'
+];
+
+// Pagination configuration
+$PAGINATION_CONFIG = [
+    'default_limit' => 20,
+    'max_limit' => 100,
+    'cursor_field' => 'created_at',
+    'sort_order' => 'DESC'
+];
+
+/**
+ * Simple in-memory cache implementation
+ */
+class SimpleCache {
+    private static $cache = [];
+    private static $timestamps = [];
+    private static $config;
+
+    public static function init($config) {
+        self::$config = $config;
+    }
+
+    public static function get($key) {
+        if (!self::$config['enabled']) return null;
+
+        $full_key = self::$config['prefix'] . $key;
+
+        if (!isset(self::$cache[$full_key])) {
+            return null;
+        }
+
+        // Check TTL
+        if (time() - self::$timestamps[$full_key] > self::$config['ttl']) {
+            unset(self::$cache[$full_key]);
+            unset(self::$timestamps[$full_key]);
+            return null;
+        }
+
+        return self::$cache[$full_key];
+    }
+
+    public static function set($key, $value) {
+        if (!self::$config['enabled']) return;
+
+        $full_key = self::$config['prefix'] . $key;
+
+        // Implement LRU eviction
+        if (count(self::$cache) >= self::$config['max_size']) {
+            $oldest_key = array_keys(self::$timestamps)[0];
+            unset(self::$cache[$oldest_key]);
+            unset(self::$timestamps[$oldest_key]);
+        }
+
+        self::$cache[$full_key] = $value;
+        self::$timestamps[$full_key] = time();
+    }
+
+    public static function invalidate($pattern) {
+        $pattern_with_prefix = self::$config['prefix'] . $pattern;
+        foreach (array_keys(self::$cache) as $key) {
+            if (strpos($key, $pattern_with_prefix) === 0) {
+                unset(self::$cache[$key]);
+                unset(self::$timestamps[$key]);
+            }
+        }
+    }
+}
+
+// Initialize cache
+SimpleCache::init($CACHE_CONFIG);
+
+/**
+ * Validate and sanitize pagination parameters
+ */
+function validatePaginationParams($cursor, $limit, $sort_order) {
+    global $PAGINATION_CONFIG;
+
+    // Validate limit
+    $limit = intval($limit ?: $PAGINATION_CONFIG['default_limit']);
+    $limit = max(1, min($limit, $PAGINATION_CONFIG['max_limit']));
+
+    // Validate sort order
+    $sort_order = strtoupper($sort_order ?: $PAGINATION_CONFIG['sort_order']);
+    if (!in_array($sort_order, ['ASC', 'DESC'])) {
+        $sort_order = $PAGINATION_CONFIG['sort_order'];
+    }
+
+    // Validate cursor (should be base64 encoded timestamp)
+    $cursor_timestamp = null;
+    if ($cursor) {
+        try {
+            $decoded = base64_decode($cursor);
+            $cursor_data = json_decode($decoded, true);
+            if ($cursor_data && isset($cursor_data['timestamp'])) {
+                $cursor_timestamp = $cursor_data['timestamp'];
+            }
+        } catch (Exception $e) {
+            // Invalid cursor, ignore
+        }
+    }
+
+    return [$cursor_timestamp, $limit, $sort_order];
+}
+
+/**
+ * Generate cursor for pagination
+ */
+function generateCursor($timestamp, $id) {
+    $cursor_data = [
+        'timestamp' => $timestamp,
+        'id' => $id
+    ];
+    return base64_encode(json_encode($cursor_data));
+}
+
+/**
+ * Build optimized SQL query with cursor-based pagination
+ */
+function buildPaginatedQuery($task_id, $cursor_timestamp, $limit, $sort_order) {
+    global $PAGINATION_CONFIG;
+
+    $base_query = "
+        SELECT
+            c.id,
+            c.task_id,
+            c.parent_comment_id,
+            c.author_id,
+            c.author_name,
+            c.author_email,
+            c.author_avatar,
+            c.content,
+            c.content_type,
+            c.created_at,
+            c.updated_at,
+            c.edited_at,
+            c.is_deleted,
+            c.is_edited,
+            c.flagged,
+            -- Aggregate mentions
+            GROUP_CONCAT(
+                DISTINCT CONCAT(
+                    '{\"id\":\"', m.id, '\",',
+                    '\"userId\":\"', m.user_id, '\",',
+                    '\"userName\":\"', m.user_name, '\",',
+                    '\"userEmail\":\"', m.user_email, '\",',
+                    '\"startIndex\":', m.start_index, ',',
+                    '\"endIndex\":', m.end_index, ',',
+                    '\"displayName\":\"', m.display_name, '\"}'
+                )
+                SEPARATOR ','
+            ) as mentions_json,
+            -- Aggregate attachments
+            GROUP_CONCAT(
+                DISTINCT CONCAT(
+                    '{\"id\":\"', a.id, '\",',
+                    '\"fileName\":\"', a.original_name, '\",',
+                    '\"fileSize\":', a.file_size, ',',
+                    '\"fileUrl\":\"/api/comments/files/', a.id, '/download\"}'
+                )
+                SEPARATOR ','
+            ) as attachments_json,
+            -- Aggregate reactions
+            GROUP_CONCAT(
+                DISTINCT CONCAT(
+                    '{\"id\":\"', r.id, '\",',
+                    '\"userId\":\"', r.user_id, '\",',
+                    '\"userName\":\"', r.user_name, '\",',
+                    '\"emoji\":\"', r.emoji, '\",',
+                    '\"createdAt\":\"', r.created_at, '\"}'
+                )
+                SEPARATOR ','
+            ) as reactions_json
+        FROM comments c
+        LEFT JOIN comment_mentions m ON c.id = m.comment_id
+        LEFT JOIN comment_attachments a ON c.id = a.comment_id
+        LEFT JOIN comment_reactions r ON c.id = r.comment_id
+        WHERE c.task_id = ?
+    ";
+
+    $params = [$task_id];
+
+    // Add cursor condition for pagination
+    if ($cursor_timestamp) {
+        if ($sort_order === 'DESC') {
+            $base_query .= " AND c.created_at < ?";
+        } else {
+            $base_query .= " AND c.created_at > ?";
+        }
+        $params[] = date('Y-m-d H:i:s', $cursor_timestamp);
+    }
+
+    // Add grouping and ordering
+    $base_query .= "
+        GROUP BY c.id
+        ORDER BY c.created_at $sort_order
+        LIMIT ?
+    ";
+    $params[] = $limit + 1; // Fetch one extra to determine if there are more pages
+
+    return [$base_query, $params];
+}
+
+/**
+ * Process and format comment data
+ */
+function formatCommentData($raw_comments) {
+    $formatted = [];
+
+    foreach ($raw_comments as $comment) {
+        $formatted_comment = [
+            'id' => $comment['id'],
+            'taskId' => $comment['task_id'],
+            'parentCommentId' => $comment['parent_comment_id'],
+            'authorId' => $comment['author_id'],
+            'authorName' => $comment['author_name'],
+            'authorEmail' => $comment['author_email'],
+            'authorAvatar' => $comment['author_avatar'],
+            'content' => $comment['content'],
+            'contentType' => $comment['content_type'],
+            'createdAt' => $comment['created_at'],
+            'updatedAt' => $comment['updated_at'],
+            'editedAt' => $comment['edited_at'],
+            'isDeleted' => (bool)$comment['is_deleted'],
+            'isEdited' => (bool)$comment['is_edited'],
+            'metadata' => [
+                'flagged' => (bool)$comment['flagged'],
+                'editHistory' => [],
+                'moderatorActions' => []
+            ]
+        ];
+
+        // Parse mentions
+        $mentions = [];
+        if ($comment['mentions_json']) {
+            $mentions_data = '[' . $comment['mentions_json'] . ']';
+            $parsed_mentions = json_decode($mentions_data, true);
+            if ($parsed_mentions) {
+                $mentions = $parsed_mentions;
+            }
+        }
+        $formatted_comment['mentions'] = $mentions;
+
+        // Parse attachments
+        $attachments = [];
+        if ($comment['attachments_json']) {
+            $attachments_data = '[' . $comment['attachments_json'] . ']';
+            $parsed_attachments = json_decode($attachments_data, true);
+            if ($parsed_attachments) {
+                $attachments = $parsed_attachments;
+            }
+        }
+        $formatted_comment['attachments'] = $attachments;
+
+        // Parse reactions
+        $reactions = [];
+        if ($comment['reactions_json']) {
+            $reactions_data = '[' . $comment['reactions_json'] . ']';
+            $parsed_reactions = json_decode($reactions_data, true);
+            if ($parsed_reactions) {
+                $reactions = $parsed_reactions;
+            }
+        }
+        $formatted_comment['reactions'] = $reactions;
+
+        $formatted[] = $formatted_comment;
+    }
+
+    return $formatted;
+}
+
+/**
+ * Get total count of comments for a task (cached)
+ */
+function getCommentCount($pdo, $task_id) {
+    $cache_key = "count:$task_id";
+    $cached_count = SimpleCache::get($cache_key);
+
+    if ($cached_count !== null) {
+        return $cached_count;
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM comments WHERE task_id = ? AND is_deleted = 0");
+    $stmt->execute([$task_id]);
+    $count = $stmt->fetchColumn();
+
+    SimpleCache::set($cache_key, $count);
+    return $count;
+}
+
+/**
+ * Handle paginated comment retrieval
+ */
+function handleGetComments() {
+    global $request_start, $memory_start;
+
+    try {
+        // Extract parameters
+        $task_id = $_GET['task_id'] ?? null;
+        $cursor = $_GET['cursor'] ?? null;
+        $limit = $_GET['limit'] ?? null;
+        $sort_order = $_GET['sort'] ?? null;
+        $include_count = $_GET['include_count'] ?? 'true';
+
+        if (!$task_id) {
+            http_response_code(400);
+            echo json_encode(['error' => 'task_id is required']);
+            return;
+        }
+
+        // Validate pagination parameters
+        list($cursor_timestamp, $validated_limit, $validated_sort) = validatePaginationParams($cursor, $limit, $sort_order);
+
+        // Check cache first
+        $cache_key = "comments:$task_id:$cursor:$validated_limit:$validated_sort";
+        $cached_result = SimpleCache::get($cache_key);
+        if ($cached_result) {
+            // Add performance headers
+            header('X-Cache-Status: HIT');
+            header('X-Response-Time: ' . round((microtime(true) - $request_start) * 1000, 2) . 'ms');
+            echo json_encode($cached_result);
+            return;
+        }
+
+        // Connect to database
+        $database = new Database();
+        $pdo = $database->getConnection();
+
+        // Build and execute query
+        list($query, $params) = buildPaginatedQuery($task_id, $cursor_timestamp, $validated_limit, $validated_sort);
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        $raw_comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Determine if there are more pages
+        $has_more = count($raw_comments) > $validated_limit;
+        if ($has_more) {
+            array_pop($raw_comments); // Remove the extra record
+        }
+
+        // Format comment data
+        $formatted_comments = formatCommentData($raw_comments);
+
+        // Generate next cursor
+        $next_cursor = null;
+        if ($has_more && !empty($formatted_comments)) {
+            $last_comment = end($formatted_comments);
+            $next_cursor = generateCursor(
+                strtotime($last_comment['createdAt']),
+                $last_comment['id']
+            );
+        }
+
+        // Get total count if requested
+        $total_count = null;
+        if ($include_count === 'true') {
+            $total_count = getCommentCount($pdo, $task_id);
+        }
+
+        // Build response
+        $response = [
+            'comments' => $formatted_comments,
+            'hasMore' => $has_more,
+            'nextCursor' => $next_cursor,
+            'totalCount' => $total_count,
+            'pageInfo' => [
+                'currentCursor' => $cursor,
+                'itemsPerPage' => $validated_limit,
+                'sortOrder' => $validated_sort
+            ],
+            'performance' => [
+                'queryTime' => round((microtime(true) - $request_start) * 1000, 2),
+                'memoryUsage' => round((memory_get_usage() - $memory_start) / 1024, 2),
+                'cacheStatus' => 'MISS'
+            ]
+        ];
+
+        // Cache the result
+        SimpleCache::set($cache_key, $response);
+
+        // Add performance headers
+        header('X-Cache-Status: MISS');
+        header('X-Response-Time: ' . $response['performance']['queryTime'] . 'ms');
+        header('X-Memory-Usage: ' . $response['performance']['memoryUsage'] . 'KB');
+
+        echo json_encode($response);
+
+    } catch (Exception $e) {
+        error_log('Error in handleGetComments: ' . $e->getMessage());
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'Failed to fetch comments',
+            'performance' => [
+                'queryTime' => round((microtime(true) - $request_start) * 1000, 2),
+                'error' => true
+            ]
+        ]);
+    }
+}
+
+/**
+ * Handle comment creation with cache invalidation
+ */
+function handleCreateComment() {
+    global $dsn, $username, $password, $options;
+
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        if (!$input || !$input['taskId'] || !$input['content']) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid input data']);
+            return;
+        }
+
+        $database = new Database();
+        $pdo = $database->getConnection();
+
+        // Insert comment (simplified - full implementation would include all fields)
+        $stmt = $pdo->prepare("
+            INSERT INTO comments (id, task_id, content, author_id, author_name, author_email, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ");
+
+        $comment_id = 'comment_' . uniqid();
+        $stmt->execute([
+            $comment_id,
+            $input['taskId'],
+            $input['content'],
+            $input['authorId'] ?? 'anonymous',
+            $input['authorName'] ?? 'Anonymous',
+            $input['authorEmail'] ?? 'anonymous@example.com'
+        ]);
+
+        // Invalidate cache for this task
+        SimpleCache::invalidate($input['taskId']);
+
+        echo json_encode([
+            'id' => $comment_id,
+            'message' => 'Comment created successfully'
+        ]);
+
+    } catch (Exception $e) {
+        error_log('Error in handleCreateComment: ' . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to create comment']);
+    }
+}
+
+/**
+ * Handle cache management endpoints
+ */
+function handleCacheOperation($operation) {
+    switch ($operation) {
+        case 'clear':
+            SimpleCache::invalidate('');
+            echo json_encode(['message' => 'Cache cleared successfully']);
+            break;
+
+        case 'stats':
+            echo json_encode([
+                'enabled' => $GLOBALS['CACHE_CONFIG']['enabled'],
+                'size' => count(SimpleCache::$cache),
+                'maxSize' => $GLOBALS['CACHE_CONFIG']['max_size'],
+                'ttl' => $GLOBALS['CACHE_CONFIG']['ttl']
+            ]);
+            break;
+
+        default:
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid cache operation']);
+    }
+}
+
+// Route requests
+$method = $_SERVER['REQUEST_METHOD'];
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+if ($method === 'GET' && isset($_GET['task_id'])) {
+    // Direct GET request with task_id parameter
+    handleGetComments();
+} elseif ($method === 'GET' && strpos($path, '/api/comments/task/') !== false) {
+    // Extract task ID from path (legacy support)
+    $path_parts = explode('/', $path);
+    $task_id = end($path_parts);
+    $_GET['task_id'] = $task_id;
+    handleGetComments();
+} elseif ($method === 'POST' && strpos($path, '/api/comments') !== false) {
+    handleCreateComment();
+} elseif ($method === 'GET' && strpos($path, '/api/comments/cache/') !== false) {
+    $operation = basename($path);
+    handleCacheOperation($operation);
+} else {
+    http_response_code(404);
+    echo json_encode(['error' => 'Endpoint not found']);
+}
+?>

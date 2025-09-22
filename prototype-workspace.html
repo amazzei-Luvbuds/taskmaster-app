@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster - Collaborative Workspace Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .task-header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+        }
+
+        .task-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .task-content {
+            padding: 20px;
+        }
+
+        .description {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #555;
+        }
+
+        .workspace-section {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: #fafbfc;
+            position: relative;
+        }
+
+        .workspace-section.drag-over {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .workspace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .workspace-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-toggle {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .ai-toggle:hover {
+            background: #059669;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #f9fafb;
+        }
+
+        .workspace-items {
+            display: grid;
+            gap: 16px;
+        }
+
+        .workspace-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .workspace-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #d1d5db;
+        }
+
+        .item-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .item-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .item-preview {
+            margin: 12px 0;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .reactions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .reaction-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reaction-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .reaction-btn.active {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .comment-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .comment {
+            font-size: 14px;
+            color: #4b5563;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .add-comment {
+            width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .add-comment:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .ai-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .ai-summary h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .ai-summary-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .ai-insights {
+            list-style: none;
+            margin-top: 8px;
+        }
+
+        .ai-insights li {
+            margin-bottom: 4px;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .ai-insights li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+        }
+
+        .category-section {
+            margin-bottom: 24px;
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .quick-add-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .quick-add-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quick-add-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .workspace-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .task-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .workspace-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .item-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="task-header">
+            <h1 class="task-title">Website Redesign - Homepage Mockups</h1>
+            <div class="task-meta">
+                <span>👤 Assigned: Sarah Johnson</span>
+                <span>📅 Due: October 15, 2024</span>
+                <span>🔄 Status: In Progress</span>
+                <span>👥 Team: Design, Marketing, Engineering</span>
+            </div>
+        </div>
+
+        <div class="task-content">
+            <div class="description">
+                <strong>Task Description:</strong> Create new homepage design mockups based on user research findings. Include mobile and desktop versions, focus on improving conversion rates and user engagement. Collaborate with marketing team on messaging and engineering team on feasibility.
+            </div>
+
+            <div class="workspace-section" id="workspace">
+                <div class="workspace-header">
+                    <h2 class="workspace-title">
+                        📂 Collaboration Workspace
+                        <span id="item-count">(0 items)</span>
+                    </h2>
+                    <button class="ai-toggle" id="ai-toggle">🤖 Enable AI Organization</button>
+                </div>
+
+                <div id="ai-summary" class="ai-summary" style="display: none;">
+                    <h4>🤖 AI Task Summary</h4>
+                    <div class="ai-summary-content">
+                        <p><strong>Progress Overview:</strong> <span id="ai-progress">Ready to start</span></p>
+                        <ul class="ai-insights" id="ai-insights">
+                            <li>Drag files, images, or paste links to get started</li>
+                            <li>Team members can react and comment on shared items</li>
+                            <li>AI will automatically organize and summarize progress</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="empty-state" class="empty-state">
+                    <h3>🎯 Keep everything in one place</h3>
+                    <p>Drag files, images, or links here. No more hunting through emails, Slack, or drives!</p>
+                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <p>📎 <strong>Drop files here</strong> or click to browse</p>
+                        <p>Supports: Images, Documents, Links, Text Notes</p>
+                    </div>
+                    <input type="file" id="file-input" class="file-input" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addSampleFile('image')">+ Add Sample Image</button>
+                        <button class="quick-add-btn" onclick="addSampleFile('document')">+ Add Sample Doc</button>
+                        <button class="quick-add-btn" onclick="addSampleFile('link')">+ Add Sample Link</button>
+                        <button class="quick-add-btn" onclick="addTextNote()">+ Add Text Note</button>
+                    </div>
+                </div>
+
+                <div id="workspace-items" class="workspace-items" style="display: none;"></div>
+            </div>
+
+            <div class="description">
+                <strong>Traditional Comments:</strong> Comments and discussions would continue to work as normal below the workspace...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let aiEnabled = false;
+        let nextId = 1;
+
+        // Sample data for demonstration
+        const sampleFiles = {
+            image: [
+                { name: 'Homepage_Desktop_v2.png', type: 'image', icon: '🖼️', preview: 'Hero section with new branding, improved CTA placement' },
+                { name: 'Mobile_Mockup_v1.png', type: 'image', icon: '📱', preview: 'Mobile-first design with simplified navigation' },
+                { name: 'Color_Palette_Final.png', type: 'image', icon: '🎨', preview: 'Brand colors and accessibility guidelines' }
+            ],
+            document: [
+                { name: 'Design_Requirements.pdf', type: 'document', icon: '📄', preview: 'Stakeholder requirements and success metrics' },
+                { name: 'User_Research_Findings.docx', type: 'document', icon: '📊', preview: 'Key insights from user interviews and testing' },
+                { name: 'Technical_Constraints.md', type: 'document', icon: '⚙️', preview: 'Engineering limitations and framework requirements' }
+            ],
+            link: [
+                { name: 'Figma Design System', type: 'link', icon: '🔗', preview: 'https://figma.com/design-system - Component library and guidelines' },
+                { name: 'Competitor Analysis', type: 'link', icon: '🔍', preview: 'https://docs.google.com/competitive-research - Market research findings' },
+                { name: 'Brand Guidelines', type: 'link', icon: '🎯', preview: 'https://brand.company.com - Logo usage and brand standards' }
+            ]
+        };
+
+        function updateItemCount() {
+            const count = items.length;
+            document.getElementById('item-count').textContent = `(${count} item${count !== 1 ? 's' : ''})`;
+
+            const emptyState = document.getElementById('empty-state');
+            const workspaceItems = document.getElementById('workspace-items');
+
+            if (count === 0) {
+                emptyState.style.display = 'block';
+                workspaceItems.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                workspaceItems.style.display = 'grid';
+            }
+        }
+
+        function addItem(itemData) {
+            const item = {
+                id: nextId++,
+                name: itemData.name,
+                type: itemData.type,
+                icon: itemData.icon,
+                preview: itemData.preview,
+                reactions: { thumbsUp: 0, thumbsDown: 0, userReaction: null },
+                comments: [],
+                addedBy: 'You',
+                addedTime: 'just now'
+            };
+
+            items.push(item);
+            renderItems();
+            updateItemCount();
+            updateAISummary();
+        }
+
+        function addSampleFile(type) {
+            const samples = sampleFiles[type];
+            const randomSample = samples[Math.floor(Math.random() * samples.length)];
+            addItem(randomSample);
+        }
+
+        function addTextNote() {
+            const text = prompt('Add a text note:');
+            if (text && text.trim()) {
+                addItem({
+                    name: 'Text Note',
+                    type: 'text',
+                    icon: '📝',
+                    preview: text.trim()
+                });
+            }
+        }
+
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            renderItems();
+            updateItemCount();
+            updateAISummary();
+        }
+
+        function toggleReaction(itemId, reactionType) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (item.reactions.userReaction === reactionType) {
+                // Remove reaction
+                item.reactions[reactionType]--;
+                item.reactions.userReaction = null;
+            } else {
+                // Add new reaction, remove old one if exists
+                if (item.reactions.userReaction) {
+                    item.reactions[item.reactions.userReaction]--;
+                }
+                item.reactions[reactionType]++;
+                item.reactions.userReaction = reactionType;
+            }
+
+            renderItems();
+            updateAISummary();
+        }
+
+        function addComment(itemId, commentText) {
+            if (!commentText.trim()) return;
+
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.comments.push({
+                author: 'You',
+                text: commentText.trim(),
+                time: 'just now'
+            });
+
+            renderItems();
+            updateAISummary();
+        }
+
+        function renderItems() {
+            const container = document.getElementById('workspace-items');
+
+            if (aiEnabled) {
+                renderCategorizedItems(container);
+            } else {
+                renderLinearItems(container);
+            }
+        }
+
+        function renderLinearItems(container) {
+            container.innerHTML = items.map(item => createItemHTML(item)).join('');
+        }
+
+        function renderCategorizedItems(container) {
+            const categories = {
+                requirements: { title: '📋 Requirements & Research', items: [] },
+                designs: { title: '🎨 Design Assets', items: [] },
+                approved: { title: '✅ Approved & Final', items: [] }
+            };
+
+            items.forEach(item => {
+                if (item.type === 'document' || item.type === 'link') {
+                    categories.requirements.items.push(item);
+                } else if (item.reactions.thumbsUp >= 3) {
+                    categories.approved.items.push(item);
+                } else {
+                    categories.designs.items.push(item);
+                }
+            });
+
+            let html = '';
+            Object.values(categories).forEach(category => {
+                if (category.items.length > 0) {
+                    html += `
+                        <div class="category-section">
+                            <div class="category-title">${category.title} (${category.items.length})</div>
+                            ${category.items.map(item => createItemHTML(item)).join('')}
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function createItemHTML(item) {
+            const hasComments = item.comments.length > 0;
+            const isApproved = item.reactions.thumbsUp >= 3;
+
+            return `
+                <div class="workspace-item">
+                    <button class="delete-btn" onclick="deleteItem(${item.id})" title="Remove item">×</button>
+                    <div class="item-header">
+                        <span class="item-icon">${item.icon}</span>
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-meta">Added by ${item.addedBy} • ${item.addedTime}</div>
+                        </div>
+                    </div>
+
+                    <div class="item-preview">${item.preview}</div>
+
+                    <div class="item-actions">
+                        <div class="reactions">
+                            <button class="reaction-btn ${item.reactions.userReaction === 'thumbsUp' ? 'active' : ''}"
+                                    onclick="toggleReaction(${item.id}, 'thumbsUp')">
+                                👍 ${item.reactions.thumbsUp}
+                            </button>
+                            <button class="reaction-btn ${item.reactions.userReaction === 'thumbsDown' ? 'active' : ''}"
+                                    onclick="toggleReaction(${item.id}, 'thumbsDown')">
+                                👎 ${item.reactions.thumbsDown}
+                            </button>
+                            ${isApproved ? '<span style="color: #10b981; font-weight: 600;">✅ Approved</span>' : ''}
+                        </div>
+                    </div>
+
+                    <div class="comment-section">
+                        ${item.comments.map(comment => `
+                            <div class="comment">
+                                <span class="comment-author">${comment.author}:</span> ${comment.text}
+                            </div>
+                        `).join('')}
+                        <textarea class="add-comment" placeholder="Add a comment..."
+                                  onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); addComment(${item.id}, this.value); this.value=''; }"></textarea>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateAISummary() {
+            if (!aiEnabled) return;
+
+            const totalItems = items.length;
+            const approvedItems = items.filter(item => item.reactions.thumbsUp >= 3).length;
+            const needsWorkItems = items.filter(item => item.reactions.thumbsDown > item.reactions.thumbsUp).length;
+            const commentsCount = items.reduce((sum, item) => sum + item.comments.length, 0);
+
+            let progress = 'Ready to start';
+            let insights = ['Drag files, images, or paste links to get started'];
+
+            if (totalItems > 0) {
+                progress = `${totalItems} items shared, ${approvedItems} approved, ${commentsCount} comments`;
+                insights = [
+                    `${approvedItems} items have team approval`,
+                    needsWorkItems > 0 ? `${needsWorkItems} items need revisions` : 'No items flagged for revision',
+                    `${commentsCount} feedback comments from team`,
+                    approvedItems >= 3 ? 'Ready for development handoff' : 'Still gathering feedback'
+                ];
+            }
+
+            document.getElementById('ai-progress').textContent = progress;
+            document.getElementById('ai-insights').innerHTML = insights.map(insight => `<li>${insight}</li>`).join('');
+        }
+
+        // AI Toggle
+        document.getElementById('ai-toggle').addEventListener('click', function() {
+            aiEnabled = !aiEnabled;
+            const summaryEl = document.getElementById('ai-summary');
+
+            if (aiEnabled) {
+                this.textContent = '🤖 AI Organization ON';
+                this.style.background = '#059669';
+                summaryEl.style.display = 'block';
+                updateAISummary();
+            } else {
+                this.textContent = '🤖 Enable AI Organization';
+                this.style.background = '#10b981';
+                summaryEl.style.display = 'none';
+            }
+
+            renderItems();
+        });
+
+        // File Upload
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                let icon = '📄';
+                if (file.type.startsWith('image/')) icon = '🖼️';
+                else if (file.type.includes('pdf')) icon = '📄';
+                else if (file.type.includes('word')) icon = '📝';
+
+                addItem({
+                    name: file.name,
+                    type: file.type.startsWith('image/') ? 'image' : 'document',
+                    icon: icon,
+                    preview: `File size: ${(file.size / 1024).toFixed(1)} KB • Type: ${file.type || 'Unknown'}`
+                });
+            });
+            this.value = '';
+        });
+
+        // Drag and Drop
+        const workspace = document.getElementById('workspace');
+
+        workspace.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+
+        workspace.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+        });
+
+        workspace.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            const files = Array.from(e.dataTransfer.files);
+            const text = e.dataTransfer.getData('text');
+
+            if (files.length > 0) {
+                files.forEach(file => {
+                    let icon = '📄';
+                    if (file.type.startsWith('image/')) icon = '🖼️';
+                    else if (file.type.includes('pdf')) icon = '📄';
+
+                    addItem({
+                        name: file.name,
+                        type: file.type.startsWith('image/') ? 'image' : 'document',
+                        icon: icon,
+                        preview: `File size: ${(file.size / 1024).toFixed(1)} KB • Dropped from computer`
+                    });
+                });
+            } else if (text && text.startsWith('http')) {
+                addItem({
+                    name: new URL(text).hostname,
+                    type: 'link',
+                    icon: '🔗',
+                    preview: text
+                });
+            } else if (text) {
+                addItem({
+                    name: 'Dropped Text',
+                    type: 'text',
+                    icon: '📝',
+                    preview: text
+                });
+            }
+        });
+
+        // Initialize
+        updateItemCount();
+    </script>
+</body>
+</html>

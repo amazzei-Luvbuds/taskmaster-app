@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <?!= include('../style.css.html'); ?>
+    <style>
+        .departments-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            color: #e5e7eb;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .page-subtitle {
+            color: #9ca3af;
+            font-size: 1.2rem;
+        }
+        
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .department-card {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .department-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+        
+        .department-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .department-name {
+            color: #e5e7eb;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .department-description {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        
+        .department-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            color: #3b82f6;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+        
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background: #374151;
+            color: #e5e7eb;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .nav-btn:hover {
+            background: #4b5563;
+        }
+        
+        .nav-btn.primary {
+            background: #3b82f6;
+        }
+        
+        .nav-btn.primary:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="departments-container">
+        <!-- Navigation -->
+        <div class="navigation">
+            <a href="../dashboard.html" class="nav-btn">← Dashboard</a>
+            <a href="../kanban.html" class="nav-btn">Kanban View</a>
+            <a href="../department_dashboard.html" class="nav-btn primary">Department Dashboard</a>
+        </div>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Department Pages</h1>
+            <p class="page-subtitle">Click on any department to access their dedicated workspace</p>
+        </div>
+        
+        <!-- Departments Grid -->
+        <div class="departments-grid">
+            <a href="accounting.html" class="department-card">
+                <span class="department-icon">💰</span>
+                <h3 class="department-name">Accounting</h3>
+                <p class="department-description">Financial Management & Revenue Tracking</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="sales.html" class="department-card">
+                <span class="department-icon">📞</span>
+                <h3 class="department-name">Sales</h3>
+                <p class="department-description">Sales Performance & Lead Management</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="tech.html" class="department-card">
+                <span class="department-icon">💻</span>
+                <h3 class="department-name">Tech</h3>
+                <p class="department-description">IT Support & System Development</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="marketing.html" class="department-card">
+                <span class="department-icon">📈</span>
+                <h3 class="department-name">Marketing</h3>
+                <p class="department-description">Campaign Management & Growth</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="hr.html" class="department-card">
+                <span class="department-icon">👥</span>
+                <h3 class="department-name">HR</h3>
+                <p class="department-description">Employee Management & Development</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="customer-retention.html" class="department-card">
+                <span class="department-icon">🎧</span>
+                <h3 class="department-name">Customer Retention</h3>
+                <p class="department-description">Customer Support & Satisfaction</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="swag.html" class="department-card">
+                <span class="department-icon">🎁</span>
+                <h3 class="department-name">Swag</h3>
+                <p class="department-description">Product & Merchandise Management</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="ideas.html" class="department-card">
+                <span class="department-icon">💡</span>
+                <h3 class="department-name">Ideas</h3>
+                <p class="department-description">Strategic Planning & Innovation</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="trade-shows.html" class="department-card">
+                <span class="department-icon">🎪</span>
+                <h3 class="department-name">Trade Shows</h3>
+                <p class="department-description">Events & Lead Generation</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="purchasing.html" class="department-card">
+                <span class="department-icon">📦</span>
+                <h3 class="department-name">Purchasing</h3>
+                <p class="department-description">Procurement & Vendor Management</p>
+                <div class="department-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Tasks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
